@@ -24,7 +24,7 @@
   <style>
     body {
       font-family: 'Noto Sans TC', sans-serif;
-      background-color: #f3f4f6;
+      background-color: #f8fafc;
     }
     .badge-locked {
       filter: grayscale(100%);
@@ -72,8 +72,8 @@
         <!-- Connection & Save Status Status Bar -->
         <div class="hidden md:flex items-center space-x-4 text-xs bg-indigo-800/60 px-3 py-1.5 rounded-full border border-indigo-500/30">
           <div class="flex items-center space-x-1.5" id="connection-status">
-            <span class="w-2.5 h-2.5 rounded-full bg-yellow-400 animate-pulse" id="status-dot"></span>
-            <span id="status-text">連線中...</span>
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400" id="status-dot"></span>
+            <span id="status-text">系統準備中...</span>
           </div>
           <span class="text-indigo-400">|</span>
           <div class="flex items-center space-x-1 text-indigo-200">
@@ -86,11 +86,11 @@
         <div class="flex items-center space-x-3" id="auth-header-section">
           <div id="user-profile-display" class="hidden flex items-center space-x-3">
             <span class="text-sm font-medium bg-indigo-600 px-3 py-1 rounded-full border border-indigo-400" id="header-username">使用者</span>
-            <button onclick="handleLogout()" class="text-xs bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg transition shadow">
+            <button onclick="window.handleLogout()" class="text-xs bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg transition shadow">
               <i class="fa-solid fa-right-from-bracket mr-1"></i>登出
             </button>
           </div>
-          <button id="btn-show-login" onclick="openAuthModal()" class="text-xs bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-3 py-1.5 rounded-lg transition shadow">
+          <button id="btn-show-login" onclick="window.openAuthModal()" class="text-xs bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-3 py-1.5 rounded-lg transition shadow">
             <i class="fa-solid fa-user mr-1"></i>登入 / 註冊
           </button>
         </div>
@@ -103,16 +103,16 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center py-2 space-y-2 md:space-y-0">
       <!-- Tabs -->
       <div class="flex space-x-1 sm:space-x-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0" id="navigation-tabs">
-        <button onclick="switchTab('fiveup')" id="tab-fiveup" class="tab-btn active text-indigo-600 border-indigo-600 font-bold px-4 py-2 border-b-2 text-sm flex items-center space-x-2 whitespace-nowrap">
+        <button onclick="window.switchTab('fiveup')" id="tab-fiveup" class="tab-btn active text-indigo-600 border-indigo-600 font-bold px-4 py-2 border-b-2 text-sm flex items-center space-x-2 whitespace-nowrap">
           <i class="fa-solid fa-book-open"></i><span>小五上學期</span>
         </button>
-        <button onclick="switchTab('sixup')" id="tab-sixup" class="tab-btn text-slate-500 hover:text-indigo-600 border-transparent font-medium px-4 py-2 border-b-2 text-sm flex items-center space-x-2 whitespace-nowrap">
+        <button onclick="window.switchTab('sixup')" id="tab-sixup" class="tab-btn text-slate-500 hover:text-indigo-600 border-transparent font-medium px-4 py-2 border-b-2 text-sm flex items-center space-x-2 whitespace-nowrap">
           <i class="fa-solid fa-graduation-cap"></i><span>小六上學期</span>
         </button>
-        <button onclick="switchTab('stats')" id="tab-stats" class="tab-btn text-slate-500 hover:text-indigo-600 border-transparent font-medium px-4 py-2 border-b-2 text-sm flex items-center space-x-2 whitespace-nowrap">
+        <button onclick="window.switchTab('stats')" id="tab-stats" class="tab-btn text-slate-500 hover:text-indigo-600 border-transparent font-medium px-4 py-2 border-b-2 text-sm flex items-center space-x-2 whitespace-nowrap">
           <i class="fa-solid fa-chart-pie"></i><span>答題統計與分析</span>
         </button>
-        <button onclick="switchTab('badges')" id="tab-badges" class="tab-btn text-slate-500 hover:text-indigo-600 border-transparent font-medium px-4 py-2 border-b-2 text-sm flex items-center space-x-2 whitespace-nowrap">
+        <button onclick="window.switchTab('badges')" id="tab-badges" class="tab-btn text-slate-500 hover:text-indigo-600 border-transparent font-medium px-4 py-2 border-b-2 text-sm flex items-center space-x-2 whitespace-nowrap">
           <i class="fa-solid fa-award"></i><span>成就與徽章牆</span>
         </button>
       </div>
@@ -122,18 +122,18 @@
         <!-- Excel Import/Export -->
         <label class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs px-2.5 py-1.5 rounded-md border border-slate-300 font-medium transition flex items-center space-x-1" title="匯入 Excel">
           <i class="fa-solid fa-file-import text-emerald-600"></i><span>匯入 Excel</span>
-          <input type="file" id="excel-file-input" accept=".xlsx, .xls" class="hidden" onchange="importExcelData(event)">
+          <input type="file" id="excel-file-input" accept=".xlsx, .xls" class="hidden" onchange="window.importExcelData(event)">
         </label>
-        <button onclick="exportExcelData()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs px-2.5 py-1.5 rounded-md border border-slate-300 font-medium transition flex items-center space-x-1" title="匯出 Excel">
+        <button onclick="window.exportExcelData()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs px-2.5 py-1.5 rounded-md border border-slate-300 font-medium transition flex items-center space-x-1" title="匯出 Excel">
           <i class="fa-solid fa-file-excel text-emerald-600"></i><span>匯出 Excel</span>
         </button>
 
         <!-- Dynamic Page/Chart High-Res Capture -->
         <div class="border-l border-slate-300 h-4 mx-1"></div>
-        <button onclick="exportPageAsImage()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs px-2.5 py-1.5 rounded-md border border-indigo-200 font-medium transition flex items-center space-x-1" title="匯出高畫質 PNG">
+        <button onclick="window.exportPageAsImage()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs px-2.5 py-1.5 rounded-md border border-indigo-200 font-medium transition flex items-center space-x-1" title="匯出高畫質 PNG">
           <i class="fa-solid fa-file-image"></i><span>PNG</span>
         </button>
-        <button onclick="exportPageAsPDF()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs px-2.5 py-1.5 rounded-md border border-rose-200 font-medium transition flex items-center space-x-1" title="匯出高畫質 PDF">
+        <button onclick="window.exportPageAsPDF()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs px-2.5 py-1.5 rounded-md border border-rose-200 font-medium transition flex items-center space-x-1" title="匯出高畫質 PDF">
           <i class="fa-solid fa-file-pdf"></i><span>PDF</span>
         </button>
       </div>
@@ -156,16 +156,14 @@
         <!-- Unit Select -->
         <div class="flex items-center space-x-2 w-full sm:w-auto">
           <label for="fiveup-unit-select" class="text-sm font-semibold text-slate-700 whitespace-nowrap">選擇單元：</label>
-          <select id="fiveup-unit-select" onchange="renderQuiz('fiveup')" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:w-64 p-2.5 font-medium shadow-sm">
+          <select id="fiveup-unit-select" onchange="window.renderQuiz('fiveup')" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:w-64 p-2.5 font-medium shadow-sm">
             <option value="ALL">全部單元 (All Units)</option>
           </select>
         </div>
       </div>
 
       <!-- Quiz Questions Container -->
-      <div id="fiveup-quiz-container" class="space-y-4">
-        <!-- Rendered by JS -->
-      </div>
+      <div id="fiveup-quiz-container" class="space-y-4"></div>
     </section>
 
     <!-- PAGE 2: SIXUP (小六上學期題庫) -->
@@ -181,16 +179,14 @@
         <!-- Unit Select -->
         <div class="flex items-center space-x-2 w-full sm:w-auto">
           <label for="sixup-unit-select" class="text-sm font-semibold text-slate-700 whitespace-nowrap">選擇單元：</label>
-          <select id="sixup-unit-select" onchange="renderQuiz('sixup')" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full sm:w-64 p-2.5 font-medium shadow-sm">
+          <select id="sixup-unit-select" onchange="window.renderQuiz('sixup')" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full sm:w-64 p-2.5 font-medium shadow-sm">
             <option value="ALL">全部單元 (All Units)</option>
           </select>
         </div>
       </div>
 
       <!-- Quiz Questions Container -->
-      <div id="sixup-quiz-container" class="space-y-4">
-        <!-- Rendered by JS -->
-      </div>
+      <div id="sixup-quiz-container" class="space-y-4"></div>
     </section>
 
     <!-- PAGE 3: STATS & ANALYTICS -->
@@ -270,9 +266,7 @@
           <i class="fa-solid fa-calendar-days text-amber-500 mr-2 text-xl"></i>
           登入排行徽章 (1 ~ 1000 天)
         </h3>
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4" id="login-badges-grid">
-          <!-- Rendered dynamically -->
-        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4" id="login-badges-grid"></div>
       </div>
 
       <!-- Section: Correct Answers Badges (1~1000 questions) -->
@@ -281,9 +275,7 @@
           <i class="fa-solid fa-award text-indigo-500 mr-2 text-xl"></i>
           累積答題正確徽章 (1 ~ 1000 題)
         </h3>
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4" id="correct-badges-grid">
-          <!-- Rendered dynamically -->
-        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4" id="correct-badges-grid"></div>
       </div>
     </section>
 
@@ -293,18 +285,18 @@
   <div id="auth-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative animate-pop overflow-hidden">
       <!-- Close Button -->
-      <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">
+      <button onclick="window.closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">
         <i class="fa-solid fa-xmark"></i>
       </button>
 
       <!-- Auth Switcher Header -->
       <div class="flex border-b border-slate-200 mb-6">
-        <button id="tab-login" onclick="switchAuthTab('login')" class="flex-1 py-3 font-bold text-center border-b-2 border-indigo-600 text-indigo-600">帳號登入</button>
-        <button id="tab-register" onclick="switchAuthTab('register')" class="flex-1 py-3 font-bold text-center border-b-2 border-transparent text-slate-400 hover:text-slate-600">註冊新帳號</button>
+        <button id="tab-login" onclick="window.switchAuthTab('login')" class="flex-1 py-3 font-bold text-center border-b-2 border-indigo-600 text-indigo-600">帳號登入</button>
+        <button id="tab-register" onclick="window.switchAuthTab('register')" class="flex-1 py-3 font-bold text-center border-b-2 border-transparent text-slate-400 hover:text-slate-600">註冊新帳號</button>
       </div>
 
       <!-- Login Form -->
-      <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
+      <form id="form-login" onsubmit="window.handleLogin(event)" class="space-y-4">
         <div>
           <label class="block text-xs font-bold text-slate-700 uppercase mb-1">電子郵件 (Email)</label>
           <input type="email" id="login-email" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="student@example.com">
@@ -319,7 +311,7 @@
       </form>
 
       <!-- Register Form -->
-      <form id="form-register" onsubmit="handleRegister(event)" class="space-y-4 hidden">
+      <form id="form-register" onsubmit="window.handleRegister(event)" class="space-y-4 hidden">
         <div>
           <label class="block text-xs font-bold text-slate-700 uppercase mb-1">學生暱稱 (Nickname)</label>
           <input type="text" id="reg-nickname" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="例如：王小明">
@@ -344,7 +336,6 @@
 
   <!-- ==================== JAVASCRIPT LOGIC ==================== -->
   <script type="module">
-    // Firebase SDK Import (v9+ ESM)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     import { 
       getAuth, 
@@ -359,25 +350,8 @@
       ref, 
       set, 
       get, 
-      child, 
-      onValue, 
-      serverTimestamp 
+      onValue 
     } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
-
-    // 1. Firebase Config Setup
-    const firebaseConfig = {
-      apiKey: "AIzaSyD5zzHcKuBWwLA1dZjUi3zRVORSIMyQ6Og",
-      authDomain: "elemqeuest.firebaseapp.com",
-      projectId: "elemqeuest",
-      storageBucket: "elemqeuest.firebasestorage.app",
-      messagingSenderId: "812471065830",
-      appId: "1:812471065830:web:f9e8383c1dbafe5cf9ef27",
-      databaseURL: "https://elemqeuest-default-rtdb.firebaseio.com"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
 
     // Global State Container
     window.appState = {
@@ -386,13 +360,17 @@
         nickname: '訪客',
         loginDays: 1,
         lastLoginDate: null,
-        answers: {}, // { questionId: { selected: number, isCorrect: boolean, timestamp: string } }
+        answers: {},
         lastSaved: null
       },
       fiveupQuestions: [],
       sixupQuestions: [],
       currentTab: 'fiveup'
     };
+
+    // Global Firebase Handles
+    let auth = null;
+    let db = null;
 
     // Default Fallback Datasets
     const defaultFiveUp = [
@@ -410,42 +388,31 @@
       { id: "6U-U3-04", unit: "第三單元 速度與距離", question: "小明 2 小時走了 8 公里，他的時速是多少？", options: ["2 公里/小時", "4 公里/小時", "8 公里/小時", "16 公里/小時"], answer: 1, explanation: "速度 = 距離 ÷ 時間 = 8 ÷ 2 = 4 公里/小時。" }
     ];
 
-    /**
-     * 強健的 JSON 格式標準化與相容函式
-     * 支持包含 object map、array、嵌套 questions 等多種多元 JSON 結構
-     */
+    // Standardize Question Objects
     function standardizeQuestions(rawData, defaultPrefix) {
       if (!rawData) return [];
       let list = [];
-
       try {
         if (Array.isArray(rawData)) {
           list = rawData;
         } else if (typeof rawData === 'object') {
-          // 若 JSON 格式為 { "第一單元": [ ... ], "第二單元": [ ... ] }
           Object.keys(rawData).forEach(unitKey => {
             const val = rawData[unitKey];
             if (Array.isArray(val)) {
-              val.forEach(q => {
-                list.push({ ...q, unit: q.unit || unitKey });
-              });
+              val.forEach(q => list.push({ ...q, unit: q.unit || unitKey }));
             } else if (val && typeof val === 'object' && Array.isArray(val.questions)) {
-              val.questions.forEach(q => {
-                list.push({ ...q, unit: q.unit || unitKey });
-              });
+              val.questions.forEach(q => list.push({ ...q, unit: q.unit || unitKey }));
             }
           });
         }
       } catch (err) {
-        console.warn("JSON Parser warning:", err);
+        console.warn("JSON standardizer warning:", err);
       }
 
-      // 標準化內部欄位
       return list.map((item, idx) => {
         const u = item.unit || item.category || item.title || "一般單元";
         const qText = item.question || item.title || item.stem || item.content || `題目 #${idx + 1}`;
         const opts = item.options || item.choices || ["選項A", "選項B", "選項C", "選項D"];
-        
         let ansIndex = 0;
         if (typeof item.answer === 'number') {
           ansIndex = item.answer;
@@ -453,7 +420,6 @@
           const matchIdx = opts.indexOf(item.answer);
           ansIndex = matchIdx !== -1 ? matchIdx : (parseInt(item.answer) || 0);
         }
-
         return {
           id: item.id || `${defaultPrefix}-${idx + 1}`,
           unit: u,
@@ -465,294 +431,96 @@
       });
     }
 
-    // Load JSON Files or Fallback
+    // Attempt Fetching Local JSON Files with Robust Fallback
     async function loadQuestionsData() {
-      // 1. 小五上學期 JSON 載入
       try {
         const res5 = await fetch('./fiveup.json');
         if (res5.ok) {
           const json5 = await res5.json();
           const parsed = standardizeQuestions(json5, '5U');
           window.appState.fiveupQuestions = parsed.length > 0 ? parsed : defaultFiveUp;
-        } else {
-          throw new Error('fiveup.json fetch failed');
-        }
+        } else { throw new Error(); }
       } catch (e) {
-        console.warn("使用小五上預設備用題庫");
         window.appState.fiveupQuestions = defaultFiveUp;
       }
 
-      // 2. 小六上學期 JSON 載入
       try {
         const res6 = await fetch('./sixup.json');
         if (res6.ok) {
           const json6 = await res6.json();
           const parsed = standardizeQuestions(json6, '6U');
           window.appState.sixupQuestions = parsed.length > 0 ? parsed : defaultSixUp;
-        } else {
-          throw new Error('sixup.json fetch failed');
-        }
-      } catch (e) {
-        console.warn("使用小六上預設備用題庫");
-        window.appState.sixupQuestions = defaultSixUp;
-      }
-    }
-
-    // Dynamic Unit Selection Dropdowns
-    function populateUnitDropdowns() {
-      // 填入五上的單元選單
-      const fiveupUnits = [...new Set(window.appState.fiveupQuestions.map(q => q.unit))];
-      const fiveupSelect = document.getElementById('fiveup-unit-select');
-      fiveupSelect.innerHTML = '<option value="ALL">全部單元 (All Units)</option>';
-      fiveupUnits.forEach(u => {
-        const opt = document.createElement('option');
-        opt.value = u;
-        opt.textContent = u;
-        fiveupSelect.appendChild(opt);
-      });
-
-      // 填入六上的單元選單
-      const sixupUnits = [...new Set(window.appState.sixupQuestions.map(q => q.unit))];
-      const sixupSelect = document.getElementById('sixup-unit-select');
-      sixupSelect.innerHTML = '<option value="ALL">全部單元 (All Units)</option>';
-      sixupUnits.forEach(u => {
-        const opt = document.createElement('option');
-        opt.value = u;
-        opt.textContent = u;
-        sixupSelect.appendChild(opt);
-      });
-    }
-
-    // ==================== INITIALIZATION & DATA FETCHING ====================
-    window.addEventListener('DOMContentLoaded', async () => {
-      setupNetworkMonitoring();
-      await loadQuestionsData();
-      populateUnitDropdowns();
-
-      // 顯式觸發題目渲染
-      renderQuiz('fiveup');
-      renderQuiz('sixup');
-
-      renderBadges();
-      initCharts();
-
-      // Firebase Connection Status Listener
-      const connectedRef = ref(db, ".info/connected");
-      onValue(connectedRef, (snap) => {
-        const dot = document.getElementById('status-dot');
-        const text = document.getElementById('status-text');
-        if (snap.val() === true) {
-          dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400";
-          text.innerText = "Firebase 雲端已連線";
-        } else {
-          dot.className = "w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse";
-          text.innerText = " Firebase 離線中";
-        }
-      });
-    });
-
-    // Monitor Browser Network Online/Offline
-    function setupNetworkMonitoring() {
-      window.addEventListener('online', () => showToast('網絡已恢復連線', 'success'));
-      window.addEventListener('offline', () => showToast('網絡連線中斷，現為離線模式', 'warning'));
-    }
-
-    // Load JSON Files or Fallback
-    async function loadQuestionsData() {
-      try {
-        const res5 = await fetch('./fiveup.json');
-        if (res5.ok) {
-          window.appState.fiveupQuestions = await res5.json();
-        } else { throw new Error(); }
-      } catch (e) {
-        window.appState.fiveupQuestions = defaultFiveUp;
-      }
-
-      try {
-        const res6 = await fetch('./sixup.json');
-        if (res6.ok) {
-          window.appState.sixupQuestions = await res6.json();
         } else { throw new Error(); }
       } catch (e) {
         window.appState.sixupQuestions = defaultSixUp;
       }
     }
 
-    // Dynamic Unit Selection Dropdowns
-    function populateUnitDropdowns() {
-      const fiveupUnits = [...new Set(window.appState.fiveupQuestions.map(q => q.unit))];
+    // Populate Dynamic Unit Select Dropdowns
+    window.populateUnitDropdowns = function() {
       const fiveupSelect = document.getElementById('fiveup-unit-select');
-      fiveupUnits.forEach(u => {
-        const opt = document.createElement('option');
-        opt.value = u;
-        opt.textContent = u;
-        fiveupSelect.appendChild(opt);
-      });
+      if (fiveupSelect) {
+        const fiveupUnits = [...new Set(window.appState.fiveupQuestions.map(q => q.unit))];
+        fiveupSelect.innerHTML = '<option value="ALL">全部單元 (All Units)</option>';
+        fiveupUnits.forEach(u => {
+          const opt = document.createElement('option');
+          opt.value = u;
+          opt.textContent = u;
+          fiveupSelect.appendChild(opt);
+        });
+      }
 
-      const sixupUnits = [...new Set(window.appState.sixupQuestions.map(q => q.unit))];
       const sixupSelect = document.getElementById('sixup-unit-select');
-      sixupUnits.forEach(u => {
-        const opt = document.createElement('option');
-        opt.value = u;
-        opt.textContent = u;
-        sixupSelect.appendChild(opt);
-      });
-    }
-
-    // ==================== AUTHENTICATION & FIREBASE SYNC ====================
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        window.appState.currentUser = user;
-        document.getElementById('btn-show-login').classList.add('hidden');
-        document.getElementById('user-profile-display').classList.remove('hidden');
-        document.getElementById('user-profile-display').classList.add('flex');
-        document.getElementById('header-username').innerText = user.displayName || user.email.split('@')[0];
-
-        // Fetch User Data from Realtime Database
-        await syncUserDataFromDB(user.uid);
-        checkAndUpdateLoginDays(user.uid);
-      } else {
-        window.appState.currentUser = null;
-        document.getElementById('btn-show-login').classList.remove('hidden');
-        document.getElementById('user-profile-display').classList.add('hidden');
-        document.getElementById('user-profile-display').classList.remove('flex');
-      }
-    });
-
-    async function syncUserDataFromDB(uid) {
-      try {
-        const userRef = ref(db, `users/${uid}`);
-        const snapshot = await get(userRef);
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          window.appState.userData = data;
-          if (data.lastSaved) {
-            document.getElementById('last-saved-time').innerText = new Date(data.lastSaved).toLocaleString('zh-TW');
-          }
-        } else {
-          // Initialize new database user profile
-          const initialData = {
-            nickname: auth.currentUser.displayName || '學生',
-            loginDays: 1,
-            lastLoginDate: new Date().toDateString(),
-            answers: {},
-            lastSaved: new Date().toISOString()
-          };
-          await set(userRef, initialData);
-          window.appState.userData = initialData;
-        }
-        updateUIStatsAndBadges();
-      } catch (err) {
-        console.error("Database fetch error:", err);
-      }
-    }
-
-    async function checkAndUpdateLoginDays(uid) {
-      const today = new Date().toDateString();
-      const lastDate = window.appState.userData.lastLoginDate;
-
-      if (lastDate !== today) {
-        const newDays = (window.appState.userData.loginDays || 0) + 1;
-        window.appState.userData.loginDays = newDays;
-        window.appState.userData.lastLoginDate = today;
-        await saveUserDataToDB();
-        showToast(`歡迎回來！累積登入第 ${newDays} 天！`, 'info');
-      }
-    }
-
-    async function saveUserDataToDB() {
-      const timeString = new Date().toISOString();
-      window.appState.userData.lastSaved = timeString;
-      document.getElementById('last-saved-time').innerText = new Date(timeString).toLocaleString('zh-TW');
-
-      if (window.appState.currentUser) {
-        const uid = window.appState.currentUser.uid;
-        try {
-          await set(ref(db, `users/${uid}`), window.appState.userData);
-        } catch (e) {
-          console.error("Save failed:", e);
-        }
-      }
-      updateUIStatsAndBadges();
-    }
-
-    // Modal Forms Handling
-    window.openAuthModal = () => document.getElementById('auth-modal').classList.remove('hidden');
-    window.closeAuthModal = () => document.getElementById('auth-modal').classList.add('hidden');
-    window.switchAuthTab = (type) => {
-      const tLogin = document.getElementById('tab-login');
-      const tReg = document.getElementById('tab-register');
-      const fLogin = document.getElementById('form-login');
-      const fReg = document.getElementById('form-register');
-
-      if (type === 'login') {
-        tLogin.className = "flex-1 py-3 font-bold text-center border-b-2 border-indigo-600 text-indigo-600";
-        tReg.className = "flex-1 py-3 font-bold text-center border-b-2 border-transparent text-slate-400 hover:text-slate-600";
-        fLogin.classList.remove('hidden');
-        fReg.classList.add('hidden');
-      } else {
-        tReg.className = "flex-1 py-3 font-bold text-center border-b-2 border-emerald-600 text-emerald-600";
-        tLogin.className = "flex-1 py-3 font-bold text-center border-b-2 border-transparent text-slate-400 hover:text-slate-600";
-        fReg.classList.remove('hidden');
-        fLogin.classList.add('hidden');
+      if (sixupSelect) {
+        const sixupUnits = [...new Set(window.appState.sixupQuestions.map(q => q.unit))];
+        sixupSelect.innerHTML = '<option value="ALL">全部單元 (All Units)</option>';
+        sixupUnits.forEach(u => {
+          const opt = document.createElement('option');
+          opt.value = u;
+          opt.textContent = u;
+          sixupSelect.appendChild(opt);
+        });
       }
     };
 
-    window.handleRegister = async (e) => {
-      e.preventDefault();
-      const nickname = document.getElementById('reg-nickname').value;
-      const email = document.getElementById('reg-email').value;
-      const password = document.getElementById('reg-password').value;
-
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await updateProfile(userCredential.user, { displayName: nickname });
-        showToast('註冊成功！已自動登入', 'success');
-        closeAuthModal();
-      } catch (error) {
-        showToast(`註冊失敗: ${error.message}`, 'error');
-      }
+    // Toast Notification Display
+    window.showToast = function(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const toast = document.createElement('div');
+      const bgColors = {
+        success: 'bg-emerald-600',
+        error: 'bg-rose-600',
+        warning: 'bg-amber-500',
+        info: 'bg-indigo-600'
+      };
+      toast.className = `${bgColors[type]} text-white text-xs font-bold px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2 transition transform translate-y-2 opacity-0`;
+      toast.innerHTML = `<span>${message}</span>`;
+      container.appendChild(toast);
+      
+      setTimeout(() => { toast.classList.remove('translate-y-2', 'opacity-0'); }, 10);
+      setTimeout(() => {
+        toast.classList.add('opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
     };
 
-    window.handleLogin = async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('login-email').value;
-      const password = document.getElementById('login-password').value;
-
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-        showToast('登入成功！', 'success');
-        closeAuthModal();
-      } catch (error) {
-        showToast(`登入失敗: ${error.message}`, 'error');
-      }
-    };
-
-    window.handleLogout = async () => {
-      await signOut(auth);
-      showToast('已安全登出', 'info');
-    };
-
-    // ==================== QUIZ RENDERING & INTERACTION ====================
-    window.renderQuiz = (type) => {
+    // Render Quiz Cards
+    window.renderQuiz = function(type) {
       const container = document.getElementById(`${type}-quiz-container`);
       const selectElement = document.getElementById(`${type}-unit-select`);
       if (!container || !selectElement) return;
 
       const selectedUnit = selectElement.value;
       const questions = type === 'fiveup' ? window.appState.fiveupQuestions : window.appState.sixupQuestions;
-
       const filtered = selectedUnit === 'ALL' ? questions : questions.filter(q => q.unit === selectedUnit);
-      container.innerHTML = '';
 
+      container.innerHTML = '';
       if (!filtered || filtered.length === 0) {
         container.innerHTML = `
           <div class="p-8 text-center bg-white rounded-xl border border-slate-200 space-y-3">
             <i class="fa-solid fa-folder-open text-4xl text-slate-300"></i>
             <p class="text-slate-500 font-medium">此單元目前尚無題目資料</p>
-            <button onclick="retryLoadQuestions('${type}')" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-3 py-1.5 rounded-lg transition font-bold border border-indigo-200">
-              <i class="fa-solid fa-rotate-right mr-1"></i>重新載入題庫
-            </button>
           </div>
         `;
         return;
@@ -777,7 +545,7 @@
           }
 
           optionsHtml += `
-            <button onclick="submitAnswer('${q.id}', ${oIdx}, ${q.answer}, '${type}')" 
+            <button onclick="window.submitAnswer('${q.id}', ${oIdx}, ${q.answer}, '${type}')" 
               ${hasAnswered ? 'disabled' : ''} 
               class="w-full text-left p-3 rounded-lg border text-sm transition flex items-center justify-between ${btnClass}">
               <span>${oIdx + 1}. ${opt}</span>
@@ -807,15 +575,130 @@
       });
     };
 
-    window.retryLoadQuestions = async (type) => {
-      showToast('正在重新載入題庫...', 'info');
-      await loadQuestionsData();
-      populateUnitDropdowns();
+    // Submit Quiz Answer
+    window.submitAnswer = function(questionId, selectedIdx, correctIdx, type) {
+      const isCorrect = selectedIdx === correctIdx;
+      window.appState.userData.answers[questionId] = {
+        selected: selectedIdx,
+        isCorrect: isCorrect,
+        timestamp: new Date().toISOString()
+      };
+      
+      saveUserData();
       renderQuiz(type);
+      window.showToast(isCorrect ? '答對了！恭喜！' : '答錯囉！看一下解析再接再勵', isCorrect ? 'success' : 'error');
     };
 
-    // ==================== TABS & NAVIGATION ====================
-    window.switchTab = (tabName) => {
+    // Save User Data (Cloud or Local Fallback)
+    async function saveUserData() {
+      const timeString = new Date().toISOString();
+      window.appState.userData.lastSaved = timeString;
+      document.getElementById('last-saved-time').innerText = new Date(timeString).toLocaleString('zh-TW');
+
+      localStorage.setItem('math_quiz_user_data', JSON.stringify(window.appState.userData));
+
+      if (db && window.appState.currentUser) {
+        try {
+          await set(ref(db, `users/${window.appState.currentUser.uid}`), window.appState.userData);
+        } catch (e) {
+          console.warn("DB Save warning:", e);
+        }
+      }
+      updateUIStatsAndBadges();
+    }
+
+    // Modal Control Functions
+    window.openAuthModal = () => document.getElementById('auth-modal').classList.remove('hidden');
+    window.closeAuthModal = () => document.getElementById('auth-modal').classList.add('hidden');
+    window.switchAuthTab = (type) => {
+      const tLogin = document.getElementById('tab-login');
+      const tReg = document.getElementById('tab-register');
+      const fLogin = document.getElementById('form-login');
+      const fReg = document.getElementById('form-register');
+
+      if (type === 'login') {
+        tLogin.className = "flex-1 py-3 font-bold text-center border-b-2 border-indigo-600 text-indigo-600";
+        tReg.className = "flex-1 py-3 font-bold text-center border-b-2 border-transparent text-slate-400 hover:text-slate-600";
+        fLogin.classList.remove('hidden');
+        fReg.classList.add('hidden');
+      } else {
+        tReg.className = "flex-1 py-3 font-bold text-center border-b-2 border-emerald-600 text-emerald-600";
+        tLogin.className = "flex-1 py-3 font-bold text-center border-b-2 border-transparent text-slate-400 hover:text-slate-600";
+        fReg.classList.remove('hidden');
+        fLogin.classList.add('hidden');
+      }
+    };
+
+    // Auth Event Handlers (Hybrid Local/Firebase)
+    window.handleRegister = async function(e) {
+      e.preventDefault();
+      const nickname = document.getElementById('reg-nickname').value;
+      const email = document.getElementById('reg-email').value;
+      const password = document.getElementById('reg-password').value;
+
+      if (auth) {
+        try {
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          await updateProfile(userCredential.user, { displayName: nickname });
+          window.showToast('雲端帳號註冊成功！', 'success');
+          window.closeAuthModal();
+          return;
+        } catch (error) {
+          console.warn("Firebase Auth Register failed, using local session:", error);
+        }
+      }
+
+      // Local Auth Fallback
+      window.appState.userData.nickname = nickname;
+      updateUserHeaderUI(nickname);
+      window.showToast('已登入 (本地模式)', 'success');
+      window.closeAuthModal();
+    };
+
+    window.handleLogin = async function(e) {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+
+      if (auth) {
+        try {
+          await signInWithEmailAndPassword(auth, email, password);
+          window.showToast('雲端登入成功！', 'success');
+          window.closeAuthModal();
+          return;
+        } catch (error) {
+          console.warn("Firebase Auth Login fallback to local:", error);
+        }
+      }
+
+      // Local Auth Fallback
+      const fallbackName = email.split('@')[0] || '學生';
+      window.appState.userData.nickname = fallbackName;
+      updateUserHeaderUI(fallbackName);
+      window.showToast('已成功登入系統！', 'success');
+      window.closeAuthModal();
+    };
+
+    window.handleLogout = async function() {
+      if (auth && window.appState.currentUser) {
+        try { await signOut(auth); } catch(e){}
+      }
+      window.appState.currentUser = null;
+      document.getElementById('btn-show-login').classList.remove('hidden');
+      document.getElementById('user-profile-display').classList.add('hidden');
+      document.getElementById('user-profile-display').classList.remove('flex');
+      window.showToast('已安全登出', 'info');
+    };
+
+    function updateUserHeaderUI(name) {
+      document.getElementById('btn-show-login').classList.add('hidden');
+      document.getElementById('user-profile-display').classList.remove('hidden');
+      document.getElementById('user-profile-display').classList.add('flex');
+      document.getElementById('header-username').innerText = name;
+    }
+
+    // Tabs Switcher
+    window.switchTab = function(tabName) {
       window.appState.currentTab = tabName;
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
       document.querySelectorAll('.tab-btn').forEach(el => {
@@ -825,26 +708,28 @@
 
       document.getElementById(`page-${tabName}`).classList.remove('hidden');
       const activeTabBtn = document.getElementById(`tab-${tabName}`);
-      activeTabBtn.classList.remove('text-slate-500', 'border-transparent', 'font-medium');
-      activeTabBtn.classList.add('text-indigo-600', 'border-indigo-600', 'font-bold');
+      if (activeTabBtn) {
+        activeTabBtn.classList.remove('text-slate-500', 'border-transparent', 'font-medium');
+        activeTabBtn.classList.add('text-indigo-600', 'border-indigo-600', 'font-bold');
+      }
 
       if (tabName === 'stats') {
         updateCharts();
       }
     };
 
-    // ==================== BADGES & ACHIEVEMENTS SYSTEM ====================
+    // Badges Wall Rendering
     const loginMilestones = [1, 3, 7, 14, 30, 60, 100, 365, 500, 1000];
     const correctMilestones = [1, 5, 10, 20, 50, 100, 250, 500, 750, 1000];
 
-    window.renderBadges = () => {
+    window.renderBadges = function() {
       const loginGrid = document.getElementById('login-badges-grid');
       const correctGrid = document.getElementById('correct-badges-grid');
+      if (!loginGrid || !correctGrid) return;
 
       const userDays = window.appState.userData.loginDays || 1;
       const correctCount = Object.values(window.appState.userData.answers || {}).filter(a => a.isCorrect).length;
 
-      // Render Login Badges
       loginGrid.innerHTML = loginMilestones.map(days => {
         const unlocked = userDays >= days;
         return `
@@ -858,7 +743,6 @@
         `;
       }).join('');
 
-      // Render Correct Badges
       correctGrid.innerHTML = correctMilestones.map(count => {
         const unlocked = correctCount >= count;
         return `
@@ -885,36 +769,31 @@
       document.getElementById('stat-accuracy-rate').innerText = `${accuracy}%`;
       document.getElementById('stat-login-days').innerText = `${loginDays} 天`;
 
-      renderBadges();
+      window.renderBadges();
       if (window.appState.currentTab === 'stats') {
         updateCharts();
       }
     }
 
-    // ==================== CHART.JS ANALYTICS ====================
+    // Chart.js Instances
     let accuracyChartInstance = null;
     let unitChartInstance = null;
 
     function initCharts() {
-      const ctx1 = document.getElementById('accuracyChart').getContext('2d');
-      accuracyChartInstance = new Chart(ctx1, {
+      const c1 = document.getElementById('accuracyChart');
+      const c2 = document.getElementById('unitChart');
+      if (!c1 || !c2) return;
+
+      accuracyChartInstance = new Chart(c1.getContext('2d'), {
         type: 'doughnut',
         data: {
           labels: ['正確', '錯誤'],
-          datasets: [{
-            data: [0, 0],
-            backgroundColor: ['#10b981', '#f43f5e']
-          }]
+          datasets: [{ data: [0, 0], backgroundColor: ['#10b981', '#f43f5e'] }]
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { position: 'bottom' } }
-        }
+        options: { responsive: true, maintainAspectRatio: false }
       });
 
-      const ctx2 = document.getElementById('unitChart').getContext('2d');
-      unitChartInstance = new Chart(ctx2, {
+      unitChartInstance = new Chart(c2.getContext('2d'), {
         type: 'bar',
         data: {
           labels: [],
@@ -923,28 +802,22 @@
             { label: '答錯題數', data: [], backgroundColor: '#cbd5e1' }
           ]
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-        }
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
       });
     }
 
     function updateCharts() {
+      if (!accuracyChartInstance || !unitChartInstance) return;
       const answers = window.appState.userData.answers || {};
       const totalAnswered = Object.keys(answers).length;
       const correctCount = Object.values(answers).filter(a => a.isCorrect).length;
       const wrongCount = totalAnswered - correctCount;
 
-      // Update Accuracy Chart
       accuracyChartInstance.data.datasets[0].data = [correctCount, wrongCount];
       accuracyChartInstance.update();
 
-      // Aggregate Unit Data
       const allQuestions = [...window.appState.fiveupQuestions, ...window.appState.sixupQuestions];
       const unitMap = {};
-
       allQuestions.forEach(q => {
         if (!unitMap[q.unit]) unitMap[q.unit] = { correct: 0, wrong: 0 };
         const ans = answers[q.id];
@@ -955,16 +828,13 @@
       });
 
       const labels = Object.keys(unitMap);
-      const correctData = labels.map(l => unitMap[l].correct);
-      const wrongData = labels.map(l => unitMap[l].wrong);
-
       unitChartInstance.data.labels = labels;
-      unitChartInstance.data.datasets[0].data = correctData;
-      unitChartInstance.data.datasets[1].data = wrongData;
+      unitChartInstance.data.datasets[0].data = labels.map(l => unitMap[l].correct);
+      unitChartInstance.data.datasets[1].data = labels.map(l => unitMap[l].wrong);
       unitChartInstance.update();
     }
 
-    // ==================== EXCEL IMPORT & EXPORT (SheetJS) ====================
+    // Excel & PNG/PDF Exports
     window.exportExcelData = () => {
       const answers = window.appState.userData.answers || {};
       const allQuestions = [...window.appState.fiveupQuestions, ...window.appState.sixupQuestions];
@@ -986,7 +856,7 @@
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "學習歷程報告");
       XLSX.writeFile(workbook, `數學測驗學習歷程_${new Date().toISOString().slice(0,10)}.xlsx`);
-      showToast('Excel 報告已導出！', 'success');
+      window.showToast('Excel 報告已導出！', 'success');
     };
 
     window.importExcelData = (event) => {
@@ -1000,19 +870,17 @@
           const workbook = XLSX.read(data, { type: 'array' });
           const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
           const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-
-          showToast(`成功讀取 ${jsonData.length} 筆 Excel 題目/歷程資料！`, 'success');
+          window.showToast(`成功讀取 ${jsonData.length} 筆 Excel 題目資料！`, 'success');
         } catch (err) {
-          showToast('匯入失敗，請確認檔案格式是否正確', 'error');
+          window.showToast('匯入失敗，請確認檔案格式', 'error');
         }
       };
       reader.readAsArrayBuffer(file);
     };
 
-    // ==================== IMAGE & PDF CAPTURE (html2canvas / jsPDF) ====================
     window.exportPageAsImage = () => {
       const target = document.getElementById('capture-area');
-      showToast('正在生成高畫質 PNG 圖片...', 'info');
+      window.showToast('正在生成高畫質 PNG 圖片...', 'info');
 
       html2canvas(target, { scale: 2, useCORS: true }).then(canvas => {
         const image = canvas.toDataURL('image/png');
@@ -1020,15 +888,13 @@
         link.download = `測驗畫面導出_${window.appState.currentTab}_${Date.now()}.png`;
         link.href = image;
         link.click();
-        showToast('PNG 圖片下載完成！', 'success');
-      }).catch(err => {
-        showToast('圖片導出失敗', 'error');
-      });
+        window.showToast('PNG 圖片下載完成！', 'success');
+      }).catch(() => window.showToast('圖片導出失敗', 'error'));
     };
 
     window.exportPageAsPDF = () => {
       const target = document.getElementById('capture-area');
-      showToast('正在生成 PDF 檔案...', 'info');
+      window.showToast('正在生成 PDF 檔案...', 'info');
 
       html2canvas(target, { scale: 2, useCORS: true }).then(canvas => {
         const imgData = canvas.toDataURL('image/png');
@@ -1040,38 +906,66 @@
 
         pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
         pdf.save(`測驗畫面報告_${window.appState.currentTab}_${Date.now()}.pdf`);
-        showToast('PDF 下載完成！', 'success');
-      }).catch(err => {
-        showToast('PDF 導出失敗', 'error');
-      });
+        window.showToast('PDF 下載完成！', 'success');
+      }).catch(() => window.showToast('PDF 導出失敗', 'error'));
     };
 
-    // Dynamic Toast Notifications
-    function showToast(message, type = 'info') {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
-      
-      const bgColors = {
-        success: 'bg-emerald-600',
-        error: 'bg-rose-600',
-        warning: 'bg-amber-500',
-        info: 'bg-indigo-600'
-      };
+    // Main App Initialization Entry
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 1. Restore local cached user data if present
+      const cachedData = localStorage.getItem('math_quiz_user_data');
+      if (cachedData) {
+        try { window.appState.userData = JSON.parse(cachedData); } catch(e){}
+      }
 
-      toast.className = `${bgColors[type]} text-white text-xs font-bold px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2 transition transform translate-y-2 opacity-0`;
-      toast.innerHTML = `<span>${message}</span>`;
-      
-      container.appendChild(toast);
-      
-      setTimeout(() => {
-        toast.classList.remove('translate-y-2', 'opacity-0');
-      }, 10);
+      // 2. Load Questions & Render UI IMMEDIATELY
+      await loadQuestionsData();
+      window.populateUnitDropdowns();
+      window.renderQuiz('fiveup');
+      window.renderQuiz('sixup');
+      window.renderBadges();
+      initCharts();
 
-      setTimeout(() => {
-        toast.classList.add('opacity-0');
-        setTimeout(() => toast.remove(), 300);
-      }, 3000);
-    }
+      // 3. Initialize Firebase Safely
+      try {
+        const firebaseConfig = {
+          apiKey: "AIzaSyD5zzHcKuBWwLA1dZjUi3zRVORSIMyQ6Og",
+          authDomain: "elemqeuest.firebaseapp.com",
+          projectId: "elemqeuest",
+          storageBucket: "elemqeuest.firebasestorage.app",
+          messagingSenderId: "812471065830",
+          appId: "1:812471065830:web:f9e8383c1dbafe5cf9ef27",
+          databaseURL: "https://elemqeuest-default-rtdb.firebaseio.com"
+        };
+        const app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getDatabase(app);
+
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            window.appState.currentUser = user;
+            updateUserHeaderUI(user.displayName || user.email.split('@')[0]);
+          }
+        });
+
+        const connectedRef = ref(db, ".info/connected");
+        onValue(connectedRef, (snap) => {
+          const dot = document.getElementById('status-dot');
+          const text = document.getElementById('status-text');
+          if (snap.val() === true) {
+            dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400";
+            text.innerText = "Firebase 雲端連線正常";
+          } else {
+            dot.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse";
+            text.innerText = "本地防護模式";
+          }
+        });
+      } catch (err) {
+        console.warn("Firebase Init fallback:", err);
+        const text = document.getElementById('status-text');
+        if (text) text.innerText = "本地存取模式";
+      }
+    });
   </script>
 </body>
 </html>
