@@ -151,7 +151,7 @@
         <!-- Unit Select -->
         <div class="flex items-center space-x-2 w-full sm:w-auto">
           <label for="fiveup-unit-select" class="text-sm font-semibold text-slate-700 whitespace-nowrap">選擇單元：</label>
-          <select id="fiveup-unit-select" onchange="window.renderQuiz('fiveup')" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:w-64 p-2.5 font-medium shadow-sm">
+          <select id="fiveup-unit-select" onchange="window.handleUnitChange('fiveup')" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:w-64 p-2.5 font-medium shadow-sm">
             <option value="ALL">全部單元 (All Units)</option>
           </select>
         </div>
@@ -174,7 +174,7 @@
         <!-- Unit Select -->
         <div class="flex items-center space-x-2 w-full sm:w-auto">
           <label for="sixup-unit-select" class="text-sm font-semibold text-slate-700 whitespace-nowrap">選擇單元：</label>
-          <select id="sixup-unit-select" onchange="window.renderQuiz('sixup')" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full sm:w-64 p-2.5 font-medium shadow-sm">
+          <select id="sixup-unit-select" onchange="window.handleUnitChange('sixup')" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full sm:w-64 p-2.5 font-medium shadow-sm">
             <option value="ALL">全部單元 (All Units)</option>
           </select>
         </div>
@@ -302,7 +302,7 @@
     let auth = null;
     let db = null;
 
-    // Default Fallback Datasets (Question, Answer, Explanation)
+    // Default Fallback Datasets
     const defaultFiveUp = [
       { id: "5U-01", unit: "第一單元 倍數與因數", question: "請問 24 的最大因數與最小倍數相加是多少？", answer: "48", explanation: "24 的最大因數是 24，最小倍數也是 24。計算方式：24 + 24 = 48。" },
       { id: "5U-02", unit: "第一單元 倍數與因數", question: "寫出 18 的所有因數。", answer: "1, 2, 3, 6, 9, 18", explanation: "18 的因數為能整除 18 的正整數：1×18, 2×9, 3×6。" },
@@ -316,7 +316,6 @@
       { id: "6U-03", unit: "第三單元 速度與距離", question: "汽車 3 小時行駛了 210 公里，平均時速是多少公里？", answer: "時速 70 公里/小時", explanation: "速度 = 距離 ÷ 時間。計算方式：210 ÷ 3 = 70 (公里/小時)。" }
     ];
 
-    // Standardize Question Objects for Direct Q&A
     function standardizeQuestions(rawData, defaultPrefix) {
       if (!rawData) return [];
       let list = [];
@@ -351,7 +350,7 @@
 
         return {
           id: item.id || `${defaultPrefix}-${idx + 1}`,
-          unit: u,
+          unit: String(u).trim(),
           question: qText,
           answer: String(ansText),
           explanation: item.explanation || item.analysis || item.calculation || item.detail || "依據題意按步驟計算即可獲得答案。"
@@ -359,7 +358,6 @@
       });
     }
 
-    // Load Local JSON with Fallback
     async function loadQuestionsData() {
       try {
         const res5 = await fetch('./fiveup.json');
@@ -384,11 +382,10 @@
       }
     }
 
-    // Populate Dynamic Dropdowns
     window.populateUnitDropdowns = function() {
       const fiveupSelect = document.getElementById('fiveup-unit-select');
       if (fiveupSelect) {
-        const fiveupUnits = [...new Set(window.appState.fiveupQuestions.map(q => q.unit))];
+        const fiveupUnits = [...new Set(window.appState.fiveupQuestions.map(q => q.unit))].filter(Boolean);
         fiveupSelect.innerHTML = '<option value="ALL">全部單元 (All Units)</option>';
         fiveupUnits.forEach(u => {
           const opt = document.createElement('option');
@@ -400,7 +397,7 @@
 
       const sixupSelect = document.getElementById('sixup-unit-select');
       if (sixupSelect) {
-        const sixupUnits = [...new Set(window.appState.sixupQuestions.map(q => q.unit))];
+        const sixupUnits = [...new Set(window.appState.sixupQuestions.map(q => q.unit))].filter(Boolean);
         sixupSelect.innerHTML = '<option value="ALL">全部單元 (All Units)</option>';
         sixupUnits.forEach(u => {
           const opt = document.createElement('option');
@@ -411,7 +408,10 @@
       }
     };
 
-    // Render Question Cards
+    window.handleUnitChange = function(type) {
+      window.renderQuiz(type);
+    };
+
     window.renderQuiz = function(type) {
       const container = document.getElementById(`${type}-quiz-container`);
       const selectElement = document.getElementById(`${type}-unit-select`);
@@ -419,7 +419,10 @@
 
       const selectedUnit = selectElement.value;
       const questions = type === 'fiveup' ? window.appState.fiveupQuestions : window.appState.sixupQuestions;
-      const filtered = selectedUnit === 'ALL' ? questions : questions.filter(q => q.unit === selectedUnit);
+      
+      const filtered = (selectedUnit === 'ALL' || !selectedUnit) 
+        ? questions 
+        : questions.filter(q => String(q.unit).trim() === String(selectedUnit).trim());
 
       container.innerHTML = '';
       if (!filtered || filtered.length === 0) {
@@ -436,7 +439,7 @@
         const card = document.createElement('div');
         card.className = "bg-white p-6 rounded-xl border border-slate-200 shadow-sm transition hover:shadow-md";
 
-        const detailId = `ans-detail-${q.id.replace(/[^a-zA-Z0-9]/g, '-')}`;
+        const detailId = `ans-detail-${type}-${idx}-${String(q.id).replace(/[^a-zA-Z0-9]/g, '-')}`;
 
         card.innerHTML = `
           <div class="flex items-center justify-between mb-3">
@@ -445,7 +448,6 @@
           </div>
           <h3 class="text-base sm:text-lg font-bold text-slate-800 mb-4 leading-relaxed">${q.question}</h3>
 
-          <!-- Action Button to Toggle Answer -->
           <div class="pt-2">
             <button onclick="window.toggleAnswerDisplay('${detailId}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold px-4 py-2 rounded-lg border border-indigo-200 transition flex items-center space-x-2">
               <i class="fa-solid fa-eye"></i>
@@ -453,7 +455,6 @@
             </button>
           </div>
 
-          <!-- Answer & Explanation Detail Panel -->
           <div id="${detailId}" class="hidden mt-4 pt-4 border-t border-slate-100 space-y-3 animate-pop">
             <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-900">
               <span class="font-bold text-xs uppercase tracking-wider text-emerald-700 flex items-center gap-1 mb-1">
@@ -474,41 +475,13 @@
       });
     };
 
-    // Toggle Answer Section Visibility
-    window.toggleAnswerDisplay = function(elementId) {
-      const target = document.getElementById(elementId);
-      if (target) {
-        target.classList.toggle('hidden');
-      }
-    };
-
-    // Toast Messages
-    window.showToast = function(message, type = 'info') {
-      const container = document.getElementById('toast-container');
-      if (!container) return;
-      const toast = document.createElement('div');
-      const bgColors = {
-        success: 'bg-emerald-600',
-        error: 'bg-rose-600',
-        warning: 'bg-amber-500',
-        info: 'bg-indigo-600'
-      };
-      toast.className = `${bgColors[type]} text-white text-xs font-bold px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2 transition transform translate-y-2 opacity-0`;
-      toast.innerHTML = `<span>${message}</span>`;
-      container.appendChild(toast);
-      
-      setTimeout(() => { toast.classList.remove('translate-y-2', 'opacity-0'); }, 10);
-      setTimeout(() => {
-        toast.classList.add('opacity-0');
-        setTimeout(() => toast.remove(), 300);
-      }, 3000);
-    };
-
-    // Save User Data (Local + Cloud Sync)
     async function saveUserData() {
       const timeString = new Date().toISOString();
       window.appState.userData.lastSaved = timeString;
-      document.getElementById('last-saved-time').innerText = new Date(timeString).toLocaleString('zh-TW');
+      const timeDisplay = document.getElementById('last-saved-time');
+      if (timeDisplay) {
+        timeDisplay.innerText = new Date(timeString).toLocaleString('zh-TW');
+      }
 
       localStorage.setItem('math_quiz_user_data_v2', JSON.stringify(window.appState.userData));
 
@@ -522,211 +495,8 @@
       window.renderBadges();
     }
 
-    // Modal Control Functions
-    window.openAuthModal = () => document.getElementById('auth-modal').classList.remove('hidden');
-    window.closeAuthModal = () => document.getElementById('auth-modal').classList.add('hidden');
-    window.switchAuthTab = (type) => {
-      const tLogin = document.getElementById('tab-login');
-      const tReg = document.getElementById('tab-register');
-      const fLogin = document.getElementById('form-login');
-      const fReg = document.getElementById('form-register');
-
-      if (type === 'login') {
-        tLogin.className = "flex-1 py-3 font-bold text-center border-b-2 border-indigo-600 text-indigo-600";
-        tReg.className = "flex-1 py-3 font-bold text-center border-b-2 border-transparent text-slate-400 hover:text-slate-600";
-        fLogin.classList.remove('hidden');
-        fReg.classList.add('hidden');
-      } else {
-        tReg.className = "flex-1 py-3 font-bold text-center border-b-2 border-emerald-600 text-emerald-600";
-        tLogin.className = "flex-1 py-3 font-bold text-center border-b-2 border-transparent text-slate-400 hover:text-slate-600";
-        fReg.classList.remove('hidden');
-        fLogin.classList.add('hidden');
-      }
-    };
-
-    // Auth Handlers
-    window.handleRegister = async function(e) {
-      e.preventDefault();
-      const nickname = document.getElementById('reg-nickname').value;
-      const email = document.getElementById('reg-email').value;
-      const password = document.getElementById('reg-password').value;
-
-      if (auth) {
-        try {
-          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-          await updateProfile(userCredential.user, { displayName: nickname });
-          window.showToast('雲端帳號註冊成功！', 'success');
-          window.closeAuthModal();
-          return;
-        } catch (error) {
-          console.warn("Firebase Auth fallback to local:", error);
-        }
-      }
-
-      window.appState.userData.nickname = nickname;
-      updateUserHeaderUI(nickname);
-      window.showToast('已登入 (本地模式)', 'success');
-      window.closeAuthModal();
-      saveUserData();
-    };
-
-    window.handleLogin = async function(e) {
-      e.preventDefault();
-      const email = document.getElementById('login-email').value;
-      const password = document.getElementById('login-password').value;
-
-      if (auth) {
-        try {
-          await signInWithEmailAndPassword(auth, email, password);
-          window.showToast('雲端登入成功！', 'success');
-          window.closeAuthModal();
-          return;
-        } catch (error) {
-          console.warn("Firebase Auth fallback:", error);
-        }
-      }
-
-      const fallbackName = email.split('@')[0] || '學生';
-      window.appState.userData.nickname = fallbackName;
-      updateUserHeaderUI(fallbackName);
-      window.showToast('已成功登入系統！', 'success');
-      window.closeAuthModal();
-      saveUserData();
-    };
-
-    window.handleLogout = async function() {
-      if (auth && window.appState.currentUser) {
-        try { await signOut(auth); } catch(e){}
-      }
-      window.appState.currentUser = null;
-      document.getElementById('btn-show-login').classList.remove('hidden');
-      document.getElementById('user-profile-display').classList.add('hidden');
-      document.getElementById('user-profile-display').classList.remove('flex');
-      window.showToast('已安全登出', 'info');
-    };
-
-    function updateUserHeaderUI(name) {
-      document.getElementById('btn-show-login').classList.add('hidden');
-      document.getElementById('user-profile-display').classList.remove('hidden');
-      document.getElementById('user-profile-display').classList.add('flex');
-      document.getElementById('header-username').innerText = name;
-    }
-
-    // Tab Switcher
-    window.switchTab = function(tabName) {
-      window.appState.currentTab = tabName;
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-      document.querySelectorAll('.tab-btn').forEach(el => {
-        el.classList.remove('text-indigo-600', 'border-indigo-600', 'font-bold');
-        el.classList.add('text-slate-500', 'border-transparent', 'font-medium');
-      });
-
-      document.getElementById(`page-${tabName}`).classList.remove('hidden');
-      const activeTabBtn = document.getElementById(`tab-${tabName}`);
-      if (activeTabBtn) {
-        activeTabBtn.classList.remove('text-slate-500', 'border-transparent', 'font-medium');
-        activeTabBtn.classList.add('text-indigo-600', 'border-indigo-600', 'font-bold');
-      }
-    };
-
-    // Badges Wall Rendering (Only Login Days: 1 ~ 1000 Days)
-    const loginMilestones = [1, 3, 7, 14, 30, 60, 90, 120, 180, 240, 365, 500, 720, 1000];
-
-    window.renderBadges = function() {
-      const loginGrid = document.getElementById('login-badges-grid');
-      const currentDaysSpan = document.getElementById('badge-current-days');
-      if (!loginGrid) return;
-
-      const userDays = window.appState.userData.loginDays || 1;
-      if (currentDaysSpan) currentDaysSpan.innerText = userDays;
-
-      loginGrid.innerHTML = loginMilestones.map(days => {
-        const unlocked = userDays >= days;
-        return `
-          <div class="flex flex-col items-center p-4 rounded-xl border ${unlocked ? 'bg-amber-50/60 border-amber-300 badge-unlocked shadow-sm' : 'bg-slate-50 border-slate-200 badge-locked'} text-center transition">
-            <div class="w-14 h-14 rounded-full ${unlocked ? 'bg-gradient-to-tr from-amber-500 to-yellow-400 text-white shadow-md' : 'bg-slate-300 text-slate-500'} flex items-center justify-center text-2xl mb-2">
-              <i class="fa-solid fa-award"></i>
-            </div>
-            <span class="text-sm font-bold ${unlocked ? 'text-amber-950' : 'text-slate-600'}">${days} 天連續</span>
-            <span class="text-[11px] font-medium ${unlocked ? 'text-amber-700' : 'text-slate-400'} mt-1">${unlocked ? '已成功解鎖' : '尚未達到'}</span>
-          </div>
-        `;
-      }).join('');
-    };
-
-    // Excel & PNG/PDF Exports
-    window.exportExcelData = () => {
-      const allQuestions = [...window.appState.fiveupQuestions, ...window.appState.sixupQuestions];
-
-      const exportRows = allQuestions.map(q => ({
-        "題目ID": q.id,
-        "單元名稱": q.unit,
-        "題目內容": q.question,
-        "答案 (Answer)": q.answer,
-        "計算方式 (Explanation)": q.explanation
-      }));
-
-      const worksheet = XLSX.utils.json_to_sheet(exportRows);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "數學題庫資料");
-      XLSX.writeFile(workbook, `康軒國小數學題庫匯出_${new Date().toISOString().slice(0,10)}.xlsx`);
-      window.showToast('Excel 題庫已導出！', 'success');
-    };
-
-    window.importExcelData = (event) => {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-          const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-          window.showToast(`成功匯入 ${jsonData.length} 筆題庫資料！`, 'success');
-        } catch (err) {
-          window.showToast('匯入失敗，請確認檔案格式', 'error');
-        }
-      };
-      reader.readAsArrayBuffer(file);
-    };
-
-    window.exportPageAsImage = () => {
-      const target = document.getElementById('capture-area');
-      window.showToast('正在導出高畫質 PNG 圖片...', 'info');
-
-      html2canvas(target, { scale: 2, useCORS: true }).then(canvas => {
-        const image = canvas.toDataURL('image/png');
-        const link = document.createElement('a');
-        link.download = `數學題庫頁面_${window.appState.currentTab}_${Date.now()}.png`;
-        link.href = image;
-        link.click();
-        window.showToast('PNG 下載完成！', 'success');
-      }).catch(() => window.showToast('導出 PNG 失敗', 'error'));
-    };
-
-    window.exportPageAsPDF = () => {
-      const target = document.getElementById('capture-area');
-      window.showToast('正在導出 PDF 文件...', 'info');
-
-      html2canvas(target, { scale: 2, useCORS: true }).then(canvas => {
-        const imgData = canvas.toDataURL('image/png');
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const imgProps = pdf.getImageProperties(imgData);
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        pdf.save(`數學題庫頁面_${window.appState.currentTab}_${Date.now()}.pdf`);
-        window.showToast('PDF 下載完成！', 'success');
-      }).catch(() => window.showToast('導出 PDF 失敗', 'error'));
-    };
-
     // Main App Initialization
     document.addEventListener('DOMContentLoaded', async () => {
-      // 1. Calculate & Update Login Streak Days
       const cachedData = localStorage.getItem('math_quiz_user_data_v2');
       const todayStr = new Date().toDateString();
       if (cachedData) {
@@ -741,7 +511,6 @@
         window.appState.userData.lastLoginDate = todayStr;
       }
 
-      // 2. Load Questions Data & Render UI
       await loadQuestionsData();
       window.populateUnitDropdowns();
       window.renderQuiz('fiveup');
@@ -749,7 +518,6 @@
       window.renderBadges();
       saveUserData();
 
-      // 3. Initialize Firebase
       try {
         const firebaseConfig = {
           apiKey: "AIzaSyD5zzHcKuBWwLA1dZjUi3zRVORSIMyQ6Og",
@@ -769,6 +537,20 @@
           if (user) {
             window.appState.currentUser = user;
             updateUserHeaderUI(user.displayName || user.email.split('@')[0]);
+
+            // Sync user data from Firebase Realtime DB
+            const userRef = ref(db, `users/${user.uid}`);
+            onValue(userRef, (snapshot) => {
+              const val = snapshot.val();
+              if (val) {
+                window.appState.userData = { ...window.appState.userData, ...val };
+                if (val.lastSaved) {
+                  const timeDisplay = document.getElementById('last-saved-time');
+                  if (timeDisplay) timeDisplay.innerText = new Date(val.lastSaved).toLocaleString('zh-TW');
+                }
+                window.renderBadges();
+              }
+            });
           }
         });
 
@@ -778,7 +560,7 @@
           const text = document.getElementById('status-text');
           if (snap.val() === true) {
             dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400";
-            text.innerText = "Firebase 連線正常";
+            text.innerText = "Firebase 實時連線";
           } else {
             dot.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse";
             text.innerText = "本地防護模式";
