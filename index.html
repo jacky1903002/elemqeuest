@@ -3,14 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>康軒國小數學 知識測驗與學習歷程平台</title>
+  <title>康軒國小數學 題庫與學習歷程平台</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- SheetJS (XLSX) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <!-- html2canvas -->
@@ -34,8 +32,8 @@
       animation: pop 0.4s ease-out;
     }
     @keyframes pop {
-      0% { transform: scale(0.8); }
-      50% { transform: scale(1.1); }
+      0% { transform: scale(0.85); }
+      50% { transform: scale(1.08); }
       100% { transform: scale(1); }
     }
     /* Custom Scrollbar */
@@ -61,19 +59,19 @@
         <!-- Logo & Title -->
         <div class="flex items-center space-x-3">
           <div class="bg-white text-indigo-700 p-2 rounded-lg font-black text-xl shadow">
-            <i class="fa-solid fa-square-root-variable"></i>
+            <i class="fa-solid fa-calculator"></i>
           </div>
           <div>
-            <h1 class="font-bold text-lg leading-tight">康軒國小數學 測驗平台</h1>
-            <p class="text-xs text-indigo-200">線上題庫與學習歷程統計</p>
+            <h1 class="font-bold text-lg leading-tight">康軒國小數學 題庫平台</h1>
+            <p class="text-xs text-indigo-200">單元題庫與連續登入追蹤系統</p>
           </div>
         </div>
 
-        <!-- Connection & Save Status Status Bar -->
+        <!-- Connection & Save Status Bar -->
         <div class="hidden md:flex items-center space-x-4 text-xs bg-indigo-800/60 px-3 py-1.5 rounded-full border border-indigo-500/30">
           <div class="flex items-center space-x-1.5" id="connection-status">
             <span class="w-2.5 h-2.5 rounded-full bg-emerald-400" id="status-dot"></span>
-            <span id="status-text">系統準備中...</span>
+            <span id="status-text">系統載入中...</span>
           </div>
           <span class="text-indigo-400">|</span>
           <div class="flex items-center space-x-1 text-indigo-200">
@@ -86,7 +84,7 @@
         <div class="flex items-center space-x-3" id="auth-header-section">
           <div id="user-profile-display" class="hidden flex items-center space-x-3">
             <span class="text-sm font-medium bg-indigo-600 px-3 py-1 rounded-full border border-indigo-400" id="header-username">使用者</span>
-            <button onclick="window.handleLogout()" class="text-xs bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg transition shadow">
+            <button onclick="window.handleLogout()" class="text-xs bg-rose-500 hover:bg-rose-600 text-white px-3 py-1.5 rounded-lg transition shadow">
               <i class="fa-solid fa-right-from-bracket mr-1"></i>登出
             </button>
           </div>
@@ -103,17 +101,14 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center py-2 space-y-2 md:space-y-0">
       <!-- Tabs -->
       <div class="flex space-x-1 sm:space-x-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0" id="navigation-tabs">
-        <button onclick="window.switchTab('fiveup')" id="tab-fiveup" class="tab-btn active text-indigo-600 border-indigo-600 font-bold px-4 py-2 border-b-2 text-sm flex items-center space-x-2 whitespace-nowrap">
-          <i class="fa-solid fa-book-open"></i><span>小五上學期</span>
+        <button onclick="window.switchTab('fiveup')" id="tab-fiveup" class="tab-btn text-indigo-600 border-indigo-600 font-bold px-4 py-2 border-b-2 text-sm flex items-center space-x-2 whitespace-nowrap">
+          <i class="fa-solid fa-book-open"></i><span>小五上學期題庫</span>
         </button>
         <button onclick="window.switchTab('sixup')" id="tab-sixup" class="tab-btn text-slate-500 hover:text-indigo-600 border-transparent font-medium px-4 py-2 border-b-2 text-sm flex items-center space-x-2 whitespace-nowrap">
-          <i class="fa-solid fa-graduation-cap"></i><span>小六上學期</span>
-        </button>
-        <button onclick="window.switchTab('stats')" id="tab-stats" class="tab-btn text-slate-500 hover:text-indigo-600 border-transparent font-medium px-4 py-2 border-b-2 text-sm flex items-center space-x-2 whitespace-nowrap">
-          <i class="fa-solid fa-chart-pie"></i><span>答題統計與分析</span>
+          <i class="fa-solid fa-graduation-cap"></i><span>小六上學期題庫</span>
         </button>
         <button onclick="window.switchTab('badges')" id="tab-badges" class="tab-btn text-slate-500 hover:text-indigo-600 border-transparent font-medium px-4 py-2 border-b-2 text-sm flex items-center space-x-2 whitespace-nowrap">
-          <i class="fa-solid fa-award"></i><span>成就與徽章牆</span>
+          <i class="fa-solid fa-award"></i><span>登入成就徽章牆</span>
         </button>
       </div>
 
@@ -128,13 +123,13 @@
           <i class="fa-solid fa-file-excel text-emerald-600"></i><span>匯出 Excel</span>
         </button>
 
-        <!-- Dynamic Page/Chart High-Res Capture -->
+        <!-- Dynamic Page High-Res Capture -->
         <div class="border-l border-slate-300 h-4 mx-1"></div>
         <button onclick="window.exportPageAsImage()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs px-2.5 py-1.5 rounded-md border border-indigo-200 font-medium transition flex items-center space-x-1" title="匯出高畫質 PNG">
-          <i class="fa-solid fa-file-image"></i><span>PNG</span>
+          <i class="fa-solid fa-file-image"></i><span>高畫質 PNG</span>
         </button>
         <button onclick="window.exportPageAsPDF()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs px-2.5 py-1.5 rounded-md border border-rose-200 font-medium transition flex items-center space-x-1" title="匯出高畫質 PDF">
-          <i class="fa-solid fa-file-pdf"></i><span>PDF</span>
+          <i class="fa-solid fa-file-pdf"></i><span>PDF 下載</span>
         </button>
       </div>
     </div>
@@ -151,7 +146,7 @@
             <span class="bg-indigo-100 text-indigo-700 text-xs px-2.5 py-1 rounded-full font-black">Grade 5</span>
             康軒國小數學 - 小五上學期題庫
           </h2>
-          <p class="text-sm text-slate-500 mt-1">選取單元進行測驗，答案提交後實時同步至雲端資料庫。</p>
+          <p class="text-sm text-slate-500 mt-1">選取單元檢視題目，可自由展開解答與計算步驟。</p>
         </div>
         <!-- Unit Select -->
         <div class="flex items-center space-x-2 w-full sm:w-auto">
@@ -174,7 +169,7 @@
             <span class="bg-purple-100 text-purple-700 text-xs px-2.5 py-1 rounded-full font-black">Grade 6</span>
             康軒國小數學 - 小六上學期題庫
           </h2>
-          <p class="text-sm text-slate-500 mt-1">小六高階數學邏輯與測驗練習。</p>
+          <p class="text-sm text-slate-500 mt-1">小六高階數學題目複習與計算方式說明。</p>
         </div>
         <!-- Unit Select -->
         <div class="flex items-center space-x-2 w-full sm:w-auto">
@@ -189,93 +184,29 @@
       <div id="sixup-quiz-container" class="space-y-4"></div>
     </section>
 
-    <!-- PAGE 3: STATS & ANALYTICS -->
-    <section id="page-stats" class="tab-content hidden space-y-6">
-      <div class="flex justify-between items-center bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-        <div>
-          <h2 class="text-xl font-bold text-slate-800">個人答題成就統計與分析</h2>
-          <p class="text-sm text-slate-500">實時計算個人答題績效、正確率與單元強弱度</p>
-        </div>
-      </div>
-
-      <!-- Score Cards Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
-          <div class="p-3 bg-blue-100 text-blue-600 rounded-lg text-2xl"><i class="fa-solid fa-pen-to-square"></i></div>
-          <div>
-            <p class="text-xs text-slate-500 font-medium">累積答題總數</p>
-            <h3 class="text-2xl font-black text-slate-800" id="stat-total-answered">0 題</h3>
-          </div>
-        </div>
-
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
-          <div class="p-3 bg-emerald-100 text-emerald-600 rounded-lg text-2xl"><i class="fa-solid fa-circle-check"></i></div>
-          <div>
-            <p class="text-xs text-slate-500 font-medium">累積正確題數</p>
-            <h3 class="text-2xl font-black text-slate-800" id="stat-correct-count">0 題</h3>
-          </div>
-        </div>
-
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
-          <div class="p-3 bg-indigo-100 text-indigo-600 rounded-lg text-2xl"><i class="fa-solid fa-percent"></i></div>
-          <div>
-            <p class="text-xs text-slate-500 font-medium">總體答對率</p>
-            <h3 class="text-2xl font-black text-slate-800" id="stat-accuracy-rate">0%</h3>
-          </div>
-        </div>
-
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
-          <div class="p-3 bg-amber-100 text-amber-600 rounded-lg text-2xl"><i class="fa-solid fa-calendar-check"></i></div>
-          <div>
-            <p class="text-xs text-slate-500 font-medium">累積登入天數</p>
-            <h3 class="text-2xl font-black text-slate-800" id="stat-login-days">1 天</h3>
-          </div>
-        </div>
-      </div>
-
-      <!-- Charts Row -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Chart 1: Accuracy Doughnut -->
-        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col items-center">
-          <h3 class="text-base font-bold text-slate-800 self-start mb-4"><i class="fa-solid fa-chart-pie mr-2 text-indigo-600"></i>正確率比例分析</h3>
-          <div class="w-64 h-64 relative">
-            <canvas id="accuracyChart"></canvas>
-          </div>
-        </div>
-
-        <!-- Chart 2: Unit Performance Bar Chart -->
-        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col">
-          <h3 class="text-base font-bold text-slate-800 mb-4"><i class="fa-solid fa-chart-column mr-2 text-indigo-600"></i>各單元作答分佈圖表</h3>
-          <div class="flex-1 w-full min-h-[250px]">
-            <canvas id="unitChart"></canvas>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- PAGE 4: ACHIEVEMENTS & BADGES -->
+    <!-- PAGE 3: LOGIN DAYS BADGES WALL (1 ~ 1000 Days) -->
     <section id="page-badges" class="tab-content hidden space-y-6">
-      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-        <h2 class="text-xl font-bold text-slate-800">成就與徽章牆</h2>
-        <p class="text-sm text-slate-500 mt-1">隨著持續登入與回答問題，解鎖屬於您的榮譽勳章！</p>
+      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center flex-wrap gap-4">
+        <div>
+          <h2 class="text-xl font-bold text-slate-800">登入成就與榮譽徽章牆</h2>
+          <p class="text-sm text-slate-500 mt-1">持續登入系統累積天數，解鎖屬於您的專屬勳章！</p>
+        </div>
+        <div class="bg-amber-50 border border-amber-200 px-4 py-2 rounded-xl flex items-center space-x-3">
+          <i class="fa-solid fa-fire text-amber-500 text-2xl"></i>
+          <div>
+            <p class="text-[11px] text-amber-700 font-bold uppercase">目前累積登入</p>
+            <p class="text-lg font-black text-amber-900"><span id="badge-current-days">1</span> 天</p>
+          </div>
+        </div>
       </div>
 
       <!-- Section: Login Streak Badges (1~1000 days) -->
       <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
         <h3 class="text-base font-bold text-slate-800 flex items-center border-b pb-3">
           <i class="fa-solid fa-calendar-days text-amber-500 mr-2 text-xl"></i>
-          登入排行徽章 (1 ~ 1000 天)
+          累積登入天數徽章 (1 ~ 1000 天)
         </h3>
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4" id="login-badges-grid"></div>
-      </div>
-
-      <!-- Section: Correct Answers Badges (1~1000 questions) -->
-      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-        <h3 class="text-base font-bold text-slate-800 flex items-center border-b pb-3">
-          <i class="fa-solid fa-award text-indigo-500 mr-2 text-xl"></i>
-          累積答題正確徽章 (1 ~ 1000 題)
-        </h3>
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4" id="correct-badges-grid"></div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4" id="login-badges-grid"></div>
       </div>
     </section>
 
@@ -283,7 +214,7 @@
 
   <!-- ==================== AUTH MODAL ==================== -->
   <div id="auth-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative animate-pop overflow-hidden">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative overflow-hidden">
       <!-- Close Button -->
       <button onclick="window.closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">
         <i class="fa-solid fa-xmark"></i>
@@ -360,7 +291,6 @@
         nickname: '訪客',
         loginDays: 1,
         lastLoginDate: null,
-        answers: {},
         lastSaved: null
       },
       fiveupQuestions: [],
@@ -368,27 +298,25 @@
       currentTab: 'fiveup'
     };
 
-    // Global Firebase Handles
+    // Firebase References
     let auth = null;
     let db = null;
 
-    // Default Fallback Datasets
+    // Default Fallback Datasets (Question, Answer, Explanation)
     const defaultFiveUp = [
-      { id: "5U-U1-01", unit: "第一單元 倍數與因數", question: "請問 24 的最大因數與最小倍數相加是多少？", options: ["25", "48", "24", "1"], answer: 1, explanation: "24 的最大因數是 24，最小倍數也是 24，24 + 24 = 48。" },
-      { id: "5U-U1-02", unit: "第一單元 倍數與因數", question: "下列哪一個數同時是 2 與 3 的倍數？", options: ["14", "15", "18", "21"], answer: 2, explanation: "18 的個位數是偶數(是2的倍數)，數字和 1+8=9(是3的倍數)。" },
-      { id: "5U-U2-03", unit: "第二單元 多邊形與內角和", question: "三角形的三個內角和是多少度？", options: ["90°", "180°", "360°", "540°"], answer: 1, explanation: "任何平面三角形的三內角和恆為 180 度。" },
-      { id: "5U-U2-04", unit: "第二單元 多邊形與內角和", question: "正方形的每一個內角是多少度？", options: ["60°", "90°", "120°", "180°"], answer: 1, explanation: "正方形四角皆為直角 90°。" },
-      { id: "5U-U3-05", unit: "第三單元 異分母分數加減", question: "計算 1/2 + 1/3 的結果為何？", options: ["2/5", "5/6", "1/6", "3/5"], answer: 1, explanation: "通分：3/6 + 2/6 = 5/6。" }
+      { id: "5U-01", unit: "第一單元 倍數與因數", question: "請問 24 的最大因數與最小倍數相加是多少？", answer: "48", explanation: "24 的最大因數是 24，最小倍數也是 24。計算方式：24 + 24 = 48。" },
+      { id: "5U-02", unit: "第一單元 倍數與因數", question: "寫出 18 的所有因數。", answer: "1, 2, 3, 6, 9, 18", explanation: "18 的因數為能整除 18 的正整數：1×18, 2×9, 3×6。" },
+      { id: "5U-03", unit: "第二單元 多邊形與內角和", question: "正六邊形的每一個內角是多少度？內角和是多少度？", answer: "內角 120°，內角和 720°", explanation: "內角和公式：(6 - 2) × 180° = 720°。每一個內角 = 720° ÷ 6 = 120°。" },
+      { id: "5U-04", unit: "第三單元 異分母分數加減", question: "計算 1/2 + 1/3 的結果。", answer: "5/6", explanation: "先找分母 2 和 3 的最小公倍數 6 通分：3/6 + 2/6 = 5/6。" }
     ];
 
     const defaultSixUp = [
-      { id: "6U-U1-01", unit: "第一單元 質數與合數", question: "小於 10 的質數共有幾個？", options: ["3 個", "4 個", "5 個", "6 個"], answer: 1, explanation: "小於 10 的質數有 2, 3, 5, 7 共 4 個。" },
-      { id: "6U-U1-02", unit: "第一單元 質數與合數", question: "1 既不是質數也不是合數，這說法是否正確？", options: ["正確", "錯誤", "不一定", "視情況而定"], answer: 0, explanation: "1 只有 1 個因數，因此既不是質數也不是合數。" },
-      { id: "6U-U2-03", unit: "第二單元 圓周長與圓面積", question: "當圓的半徑變為原本的 2 倍時，圓面積變為原本的幾倍？", options: ["2 倍", "4 倍", "8 倍", "6 倍"], answer: 1, explanation: "圓面積 = 半徑 × 半徑 × π，半徑變為 2 倍，面積變為 2 × 2 = 4 倍。" },
-      { id: "6U-U3-04", unit: "第三單元 速度與距離", question: "小明 2 小時走了 8 公里，他的時速是多少？", options: ["2 公里/小時", "4 公里/小時", "8 公里/小時", "16 公里/小時"], answer: 1, explanation: "速度 = 距離 ÷ 時間 = 8 ÷ 2 = 4 公里/小時。" }
+      { id: "6U-01", unit: "第一單元 質數與合數", question: "請列出 30 以內大於 10 的所有質數。", answer: "11, 13, 17, 19, 23, 29", explanation: "質數是指除了 1 和自己本身以外沒有其他因數的整數。" },
+      { id: "6U-02", unit: "第二單元 圓周長與圓面積", question: "半徑為 5 公分的圓，其圓周長與圓面積分別是多少？(圓周率以 3.14 計算)", answer: "圓周長 31.4 公分，圓面積 78.5 平方公分", explanation: "圓周長 = 直徑 × 3.14 = (5 × 2) × 3.14 = 31.4 公分；圓面積 = 半徑 × 半徑 × 3.14 = 5 × 5 × 3.14 = 78.5 平方公分。" },
+      { id: "6U-03", unit: "第三單元 速度與距離", question: "汽車 3 小時行駛了 210 公里，平均時速是多少公里？", answer: "時速 70 公里/小時", explanation: "速度 = 距離 ÷ 時間。計算方式：210 ÷ 3 = 70 (公里/小時)。" }
     ];
 
-    // Standardize Question Objects
+    // Standardize Question Objects for Direct Q&A
     function standardizeQuestions(rawData, defaultPrefix) {
       if (!rawData) return [];
       let list = [];
@@ -406,32 +334,32 @@
           });
         }
       } catch (err) {
-        console.warn("JSON standardizer warning:", err);
+        console.warn("JSON parse warning:", err);
       }
 
       return list.map((item, idx) => {
         const u = item.unit || item.category || item.title || "一般單元";
         const qText = item.question || item.title || item.stem || item.content || `題目 #${idx + 1}`;
-        const opts = item.options || item.choices || ["選項A", "選項B", "選項C", "選項D"];
-        let ansIndex = 0;
-        if (typeof item.answer === 'number') {
-          ansIndex = item.answer;
-        } else if (typeof item.answer === 'string') {
-          const matchIdx = opts.indexOf(item.answer);
-          ansIndex = matchIdx !== -1 ? matchIdx : (parseInt(item.answer) || 0);
+        
+        let ansText = item.answer;
+        if (typeof item.answer === 'number' && item.options) {
+          ansText = item.options[item.answer] || item.answer;
         }
+        if (ansText === undefined || ansText === null) {
+          ansText = "請參考解答詳細說明。";
+        }
+
         return {
           id: item.id || `${defaultPrefix}-${idx + 1}`,
           unit: u,
           question: qText,
-          options: opts,
-          answer: ansIndex,
-          explanation: item.explanation || item.analysis || item.detail || "答對了！繼續加油！"
+          answer: String(ansText),
+          explanation: item.explanation || item.analysis || item.calculation || item.detail || "依據題意按步驟計算即可獲得答案。"
         };
       });
     }
 
-    // Attempt Fetching Local JSON Files with Robust Fallback
+    // Load Local JSON with Fallback
     async function loadQuestionsData() {
       try {
         const res5 = await fetch('./fiveup.json');
@@ -456,7 +384,7 @@
       }
     }
 
-    // Populate Dynamic Unit Select Dropdowns
+    // Populate Dynamic Dropdowns
     window.populateUnitDropdowns = function() {
       const fiveupSelect = document.getElementById('fiveup-unit-select');
       if (fiveupSelect) {
@@ -483,29 +411,7 @@
       }
     };
 
-    // Toast Notification Display
-    window.showToast = function(message, type = 'info') {
-      const container = document.getElementById('toast-container');
-      if (!container) return;
-      const toast = document.createElement('div');
-      const bgColors = {
-        success: 'bg-emerald-600',
-        error: 'bg-rose-600',
-        warning: 'bg-amber-500',
-        info: 'bg-indigo-600'
-      };
-      toast.className = `${bgColors[type]} text-white text-xs font-bold px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2 transition transform translate-y-2 opacity-0`;
-      toast.innerHTML = `<span>${message}</span>`;
-      container.appendChild(toast);
-      
-      setTimeout(() => { toast.classList.remove('translate-y-2', 'opacity-0'); }, 10);
-      setTimeout(() => {
-        toast.classList.add('opacity-0');
-        setTimeout(() => toast.remove(), 300);
-      }, 3000);
-    };
-
-    // Render Quiz Cards
+    // Render Question Cards
     window.renderQuiz = function(type) {
       const container = document.getElementById(`${type}-quiz-container`);
       const selectElement = document.getElementById(`${type}-unit-select`);
@@ -527,84 +433,93 @@
       }
 
       filtered.forEach((q, idx) => {
-        const userAnsObj = window.appState.userData.answers[q.id];
-        const hasAnswered = userAnsObj !== undefined;
-
         const card = document.createElement('div');
         card.className = "bg-white p-6 rounded-xl border border-slate-200 shadow-sm transition hover:shadow-md";
 
-        let optionsHtml = '';
-        q.options.forEach((opt, oIdx) => {
-          let btnClass = "border-slate-200 hover:bg-slate-50 text-slate-700";
-          if (hasAnswered) {
-            if (oIdx === q.answer) {
-              btnClass = "bg-emerald-100 border-emerald-500 text-emerald-800 font-bold";
-            } else if (userAnsObj.selected === oIdx && !userAnsObj.isCorrect) {
-              btnClass = "bg-rose-100 border-rose-500 text-rose-800 font-bold";
-            }
-          }
-
-          optionsHtml += `
-            <button onclick="window.submitAnswer('${q.id}', ${oIdx}, ${q.answer}, '${type}')" 
-              ${hasAnswered ? 'disabled' : ''} 
-              class="w-full text-left p-3 rounded-lg border text-sm transition flex items-center justify-between ${btnClass}">
-              <span>${oIdx + 1}. ${opt}</span>
-              ${hasAnswered && oIdx === q.answer ? '<i class="fa-solid fa-check text-emerald-600"></i>' : ''}
-              ${hasAnswered && userAnsObj.selected === oIdx && !userAnsObj.isCorrect ? '<i class="fa-solid fa-xmark text-rose-600"></i>' : ''}
-            </button>
-          `;
-        });
+        const detailId = `ans-detail-${q.id.replace(/[^a-zA-Z0-9]/g, '-')}`;
 
         card.innerHTML = `
           <div class="flex items-center justify-between mb-3">
-            <span class="text-xs bg-indigo-50 text-indigo-700 border border-indigo-100 px-2.5 py-1 rounded-md font-semibold">${q.unit}</span>
-            <span class="text-xs font-bold text-slate-400">題目 #${idx + 1}</span>
+            <span class="text-xs bg-indigo-50 text-indigo-700 border border-indigo-100 px-3 py-1 rounded-md font-semibold">${q.unit}</span>
+            <span class="text-xs font-bold text-slate-400">第 ${idx + 1} 題</span>
           </div>
-          <h3 class="text-base font-bold text-slate-800 mb-4">${q.question}</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-            ${optionsHtml}
+          <h3 class="text-base sm:text-lg font-bold text-slate-800 mb-4 leading-relaxed">${q.question}</h3>
+
+          <!-- Action Button to Toggle Answer -->
+          <div class="pt-2">
+            <button onclick="window.toggleAnswerDisplay('${detailId}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold px-4 py-2 rounded-lg border border-indigo-200 transition flex items-center space-x-2">
+              <i class="fa-solid fa-eye"></i>
+              <span>顯示 / 隱藏 答案與計算過程</span>
+            </button>
           </div>
-          ${hasAnswered ? `
-            <div class="mt-4 p-3 bg-indigo-50 border border-indigo-100 rounded-lg text-xs text-indigo-900">
-              <span class="font-bold"><i class="fa-solid fa-lightbulb text-amber-500 mr-1"></i>解析：</span>
-              ${q.explanation || '暫無詳細解析。'}
+
+          <!-- Answer & Explanation Detail Panel -->
+          <div id="${detailId}" class="hidden mt-4 pt-4 border-t border-slate-100 space-y-3 animate-pop">
+            <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-900">
+              <span class="font-bold text-xs uppercase tracking-wider text-emerald-700 flex items-center gap-1 mb-1">
+                <i class="fa-solid fa-square-check text-emerald-600"></i> 正確答案 (Answer)：
+              </span>
+              <p class="text-sm font-black text-emerald-800 pl-5">${q.answer}</p>
             </div>
-          ` : ''}
+            
+            <div class="p-3 bg-indigo-50 border border-indigo-100 rounded-lg text-indigo-900">
+              <span class="font-bold text-xs uppercase tracking-wider text-indigo-700 flex items-center gap-1 mb-1">
+                <i class="fa-solid fa-calculator text-indigo-600"></i> 計算方式與詳細解析 (Explanation)：
+              </span>
+              <p class="text-xs sm:text-sm text-indigo-950 pl-5 leading-relaxed whitespace-pre-line">${q.explanation}</p>
+            </div>
+          </div>
         `;
         container.appendChild(card);
       });
     };
 
-    // Submit Quiz Answer
-    window.submitAnswer = function(questionId, selectedIdx, correctIdx, type) {
-      const isCorrect = selectedIdx === correctIdx;
-      window.appState.userData.answers[questionId] = {
-        selected: selectedIdx,
-        isCorrect: isCorrect,
-        timestamp: new Date().toISOString()
-      };
-      
-      saveUserData();
-      renderQuiz(type);
-      window.showToast(isCorrect ? '答對了！恭喜！' : '答錯囉！看一下解析再接再勵', isCorrect ? 'success' : 'error');
+    // Toggle Answer Section Visibility
+    window.toggleAnswerDisplay = function(elementId) {
+      const target = document.getElementById(elementId);
+      if (target) {
+        target.classList.toggle('hidden');
+      }
     };
 
-    // Save User Data (Cloud or Local Fallback)
+    // Toast Messages
+    window.showToast = function(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const toast = document.createElement('div');
+      const bgColors = {
+        success: 'bg-emerald-600',
+        error: 'bg-rose-600',
+        warning: 'bg-amber-500',
+        info: 'bg-indigo-600'
+      };
+      toast.className = `${bgColors[type]} text-white text-xs font-bold px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2 transition transform translate-y-2 opacity-0`;
+      toast.innerHTML = `<span>${message}</span>`;
+      container.appendChild(toast);
+      
+      setTimeout(() => { toast.classList.remove('translate-y-2', 'opacity-0'); }, 10);
+      setTimeout(() => {
+        toast.classList.add('opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    };
+
+    // Save User Data (Local + Cloud Sync)
     async function saveUserData() {
       const timeString = new Date().toISOString();
       window.appState.userData.lastSaved = timeString;
       document.getElementById('last-saved-time').innerText = new Date(timeString).toLocaleString('zh-TW');
 
-      localStorage.setItem('math_quiz_user_data', JSON.stringify(window.appState.userData));
+      localStorage.setItem('math_quiz_user_data_v2', JSON.stringify(window.appState.userData));
 
       if (db && window.appState.currentUser) {
         try {
           await set(ref(db, `users/${window.appState.currentUser.uid}`), window.appState.userData);
         } catch (e) {
-          console.warn("DB Save warning:", e);
+          console.warn("Firebase sync error:", e);
         }
       }
-      updateUIStatsAndBadges();
+      window.renderBadges();
     }
 
     // Modal Control Functions
@@ -629,7 +544,7 @@
       }
     };
 
-    // Auth Event Handlers (Hybrid Local/Firebase)
+    // Auth Handlers
     window.handleRegister = async function(e) {
       e.preventDefault();
       const nickname = document.getElementById('reg-nickname').value;
@@ -644,15 +559,15 @@
           window.closeAuthModal();
           return;
         } catch (error) {
-          console.warn("Firebase Auth Register failed, using local session:", error);
+          console.warn("Firebase Auth fallback to local:", error);
         }
       }
 
-      // Local Auth Fallback
       window.appState.userData.nickname = nickname;
       updateUserHeaderUI(nickname);
       window.showToast('已登入 (本地模式)', 'success');
       window.closeAuthModal();
+      saveUserData();
     };
 
     window.handleLogin = async function(e) {
@@ -667,16 +582,16 @@
           window.closeAuthModal();
           return;
         } catch (error) {
-          console.warn("Firebase Auth Login fallback to local:", error);
+          console.warn("Firebase Auth fallback:", error);
         }
       }
 
-      // Local Auth Fallback
       const fallbackName = email.split('@')[0] || '學生';
       window.appState.userData.nickname = fallbackName;
       updateUserHeaderUI(fallbackName);
       window.showToast('已成功登入系統！', 'success');
       window.closeAuthModal();
+      saveUserData();
     };
 
     window.handleLogout = async function() {
@@ -697,7 +612,7 @@
       document.getElementById('header-username').innerText = name;
     }
 
-    // Tabs Switcher
+    // Tab Switcher
     window.switchTab = function(tabName) {
       window.appState.currentTab = tabName;
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
@@ -712,151 +627,50 @@
         activeTabBtn.classList.remove('text-slate-500', 'border-transparent', 'font-medium');
         activeTabBtn.classList.add('text-indigo-600', 'border-indigo-600', 'font-bold');
       }
-
-      if (tabName === 'stats') {
-        updateCharts();
-      }
     };
 
-    // Badges Wall Rendering
-    const loginMilestones = [1, 3, 7, 14, 30, 60, 100, 365, 500, 1000];
-    const correctMilestones = [1, 5, 10, 20, 50, 100, 250, 500, 750, 1000];
+    // Badges Wall Rendering (Only Login Days: 1 ~ 1000 Days)
+    const loginMilestones = [1, 3, 7, 14, 30, 60, 90, 120, 180, 240, 365, 500, 720, 1000];
 
     window.renderBadges = function() {
       const loginGrid = document.getElementById('login-badges-grid');
-      const correctGrid = document.getElementById('correct-badges-grid');
-      if (!loginGrid || !correctGrid) return;
+      const currentDaysSpan = document.getElementById('badge-current-days');
+      if (!loginGrid) return;
 
       const userDays = window.appState.userData.loginDays || 1;
-      const correctCount = Object.values(window.appState.userData.answers || {}).filter(a => a.isCorrect).length;
+      if (currentDaysSpan) currentDaysSpan.innerText = userDays;
 
       loginGrid.innerHTML = loginMilestones.map(days => {
         const unlocked = userDays >= days;
         return `
-          <div class="flex flex-col items-center p-3 rounded-xl border ${unlocked ? 'bg-amber-50/50 border-amber-200 badge-unlocked' : 'bg-slate-50 border-slate-200 badge-locked'} text-center transition">
-            <div class="w-12 h-12 rounded-full ${unlocked ? 'bg-amber-500 text-white' : 'bg-slate-300 text-slate-500'} flex items-center justify-center text-xl shadow mb-2">
-              <i class="fa-solid fa-fire"></i>
+          <div class="flex flex-col items-center p-4 rounded-xl border ${unlocked ? 'bg-amber-50/60 border-amber-300 badge-unlocked shadow-sm' : 'bg-slate-50 border-slate-200 badge-locked'} text-center transition">
+            <div class="w-14 h-14 rounded-full ${unlocked ? 'bg-gradient-to-tr from-amber-500 to-yellow-400 text-white shadow-md' : 'bg-slate-300 text-slate-500'} flex items-center justify-center text-2xl mb-2">
+              <i class="fa-solid fa-award"></i>
             </div>
-            <span class="text-xs font-bold ${unlocked ? 'text-amber-900' : 'text-slate-500'}">${days} 天連續</span>
-            <span class="text-[10px] text-slate-400 mt-0.5">${unlocked ? '已解鎖' : '未解鎖'}</span>
-          </div>
-        `;
-      }).join('');
-
-      correctGrid.innerHTML = correctMilestones.map(count => {
-        const unlocked = correctCount >= count;
-        return `
-          <div class="flex flex-col items-center p-3 rounded-xl border ${unlocked ? 'bg-indigo-50/50 border-indigo-200 badge-unlocked' : 'bg-slate-50 border-slate-200 badge-locked'} text-center transition">
-            <div class="w-12 h-12 rounded-full ${unlocked ? 'bg-indigo-600 text-white' : 'bg-slate-300 text-slate-500'} flex items-center justify-center text-xl shadow mb-2">
-              <i class="fa-solid fa-trophy"></i>
-            </div>
-            <span class="text-xs font-bold ${unlocked ? 'text-indigo-900' : 'text-slate-500'}">答對 ${count} 題</span>
-            <span class="text-[10px] text-slate-400 mt-0.5">${unlocked ? '已解鎖' : '未解鎖'}</span>
+            <span class="text-sm font-bold ${unlocked ? 'text-amber-950' : 'text-slate-600'}">${days} 天連續</span>
+            <span class="text-[11px] font-medium ${unlocked ? 'text-amber-700' : 'text-slate-400'} mt-1">${unlocked ? '已成功解鎖' : '尚未達到'}</span>
           </div>
         `;
       }).join('');
     };
 
-    function updateUIStatsAndBadges() {
-      const answers = window.appState.userData.answers || {};
-      const totalAnswered = Object.keys(answers).length;
-      const correctCount = Object.values(answers).filter(a => a.isCorrect).length;
-      const accuracy = totalAnswered > 0 ? Math.round((correctCount / totalAnswered) * 100) : 0;
-      const loginDays = window.appState.userData.loginDays || 1;
-
-      document.getElementById('stat-total-answered').innerText = `${totalAnswered} 題`;
-      document.getElementById('stat-correct-count').innerText = `${correctCount} 題`;
-      document.getElementById('stat-accuracy-rate').innerText = `${accuracy}%`;
-      document.getElementById('stat-login-days').innerText = `${loginDays} 天`;
-
-      window.renderBadges();
-      if (window.appState.currentTab === 'stats') {
-        updateCharts();
-      }
-    }
-
-    // Chart.js Instances
-    let accuracyChartInstance = null;
-    let unitChartInstance = null;
-
-    function initCharts() {
-      const c1 = document.getElementById('accuracyChart');
-      const c2 = document.getElementById('unitChart');
-      if (!c1 || !c2) return;
-
-      accuracyChartInstance = new Chart(c1.getContext('2d'), {
-        type: 'doughnut',
-        data: {
-          labels: ['正確', '錯誤'],
-          datasets: [{ data: [0, 0], backgroundColor: ['#10b981', '#f43f5e'] }]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
-      });
-
-      unitChartInstance = new Chart(c2.getContext('2d'), {
-        type: 'bar',
-        data: {
-          labels: [],
-          datasets: [
-            { label: '答對題數', data: [], backgroundColor: '#6366f1' },
-            { label: '答錯題數', data: [], backgroundColor: '#cbd5e1' }
-          ]
-        },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
-      });
-    }
-
-    function updateCharts() {
-      if (!accuracyChartInstance || !unitChartInstance) return;
-      const answers = window.appState.userData.answers || {};
-      const totalAnswered = Object.keys(answers).length;
-      const correctCount = Object.values(answers).filter(a => a.isCorrect).length;
-      const wrongCount = totalAnswered - correctCount;
-
-      accuracyChartInstance.data.datasets[0].data = [correctCount, wrongCount];
-      accuracyChartInstance.update();
-
-      const allQuestions = [...window.appState.fiveupQuestions, ...window.appState.sixupQuestions];
-      const unitMap = {};
-      allQuestions.forEach(q => {
-        if (!unitMap[q.unit]) unitMap[q.unit] = { correct: 0, wrong: 0 };
-        const ans = answers[q.id];
-        if (ans) {
-          if (ans.isCorrect) unitMap[q.unit].correct++;
-          else unitMap[q.unit].wrong++;
-        }
-      });
-
-      const labels = Object.keys(unitMap);
-      unitChartInstance.data.labels = labels;
-      unitChartInstance.data.datasets[0].data = labels.map(l => unitMap[l].correct);
-      unitChartInstance.data.datasets[1].data = labels.map(l => unitMap[l].wrong);
-      unitChartInstance.update();
-    }
-
     // Excel & PNG/PDF Exports
     window.exportExcelData = () => {
-      const answers = window.appState.userData.answers || {};
       const allQuestions = [...window.appState.fiveupQuestions, ...window.appState.sixupQuestions];
 
-      const exportRows = allQuestions.map(q => {
-        const userAns = answers[q.id];
-        return {
-          "題目ID": q.id,
-          "單元": q.unit,
-          "題目": q.question,
-          "答題狀態": userAns ? (userAns.isCorrect ? "正確" : "錯誤") : "未答",
-          "選擇選項": userAns ? q.options[userAns.selected] : "-",
-          "標準答案": q.options[q.answer],
-          "答題時間": userAns ? new Date(userAns.timestamp).toLocaleString('zh-TW') : "-"
-        };
-      });
+      const exportRows = allQuestions.map(q => ({
+        "題目ID": q.id,
+        "單元名稱": q.unit,
+        "題目內容": q.question,
+        "答案 (Answer)": q.answer,
+        "計算方式 (Explanation)": q.explanation
+      }));
 
       const worksheet = XLSX.utils.json_to_sheet(exportRows);
       const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "學習歷程報告");
-      XLSX.writeFile(workbook, `數學測驗學習歷程_${new Date().toISOString().slice(0,10)}.xlsx`);
-      window.showToast('Excel 報告已導出！', 'success');
+      XLSX.utils.book_append_sheet(workbook, worksheet, "數學題庫資料");
+      XLSX.writeFile(workbook, `康軒國小數學題庫匯出_${new Date().toISOString().slice(0,10)}.xlsx`);
+      window.showToast('Excel 題庫已導出！', 'success');
     };
 
     window.importExcelData = (event) => {
@@ -870,7 +684,7 @@
           const workbook = XLSX.read(data, { type: 'array' });
           const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
           const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-          window.showToast(`成功讀取 ${jsonData.length} 筆 Excel 題目資料！`, 'success');
+          window.showToast(`成功匯入 ${jsonData.length} 筆題庫資料！`, 'success');
         } catch (err) {
           window.showToast('匯入失敗，請確認檔案格式', 'error');
         }
@@ -880,21 +694,21 @@
 
     window.exportPageAsImage = () => {
       const target = document.getElementById('capture-area');
-      window.showToast('正在生成高畫質 PNG 圖片...', 'info');
+      window.showToast('正在導出高畫質 PNG 圖片...', 'info');
 
       html2canvas(target, { scale: 2, useCORS: true }).then(canvas => {
         const image = canvas.toDataURL('image/png');
         const link = document.createElement('a');
-        link.download = `測驗畫面導出_${window.appState.currentTab}_${Date.now()}.png`;
+        link.download = `數學題庫頁面_${window.appState.currentTab}_${Date.now()}.png`;
         link.href = image;
         link.click();
-        window.showToast('PNG 圖片下載完成！', 'success');
-      }).catch(() => window.showToast('圖片導出失敗', 'error'));
+        window.showToast('PNG 下載完成！', 'success');
+      }).catch(() => window.showToast('導出 PNG 失敗', 'error'));
     };
 
     window.exportPageAsPDF = () => {
       const target = document.getElementById('capture-area');
-      window.showToast('正在生成 PDF 檔案...', 'info');
+      window.showToast('正在導出 PDF 文件...', 'info');
 
       html2canvas(target, { scale: 2, useCORS: true }).then(canvas => {
         const imgData = canvas.toDataURL('image/png');
@@ -905,37 +719,47 @@
         const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
         pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        pdf.save(`測驗畫面報告_${window.appState.currentTab}_${Date.now()}.pdf`);
+        pdf.save(`數學題庫頁面_${window.appState.currentTab}_${Date.now()}.pdf`);
         window.showToast('PDF 下載完成！', 'success');
-      }).catch(() => window.showToast('PDF 導出失敗', 'error'));
+      }).catch(() => window.showToast('導出 PDF 失敗', 'error'));
     };
 
-    // Main App Initialization Entry
+    // Main App Initialization
     document.addEventListener('DOMContentLoaded', async () => {
-      // 1. Restore local cached user data if present
-      const cachedData = localStorage.getItem('math_quiz_user_data');
+      // 1. Calculate & Update Login Streak Days
+      const cachedData = localStorage.getItem('math_quiz_user_data_v2');
+      const todayStr = new Date().toDateString();
       if (cachedData) {
-        try { window.appState.userData = JSON.parse(cachedData); } catch(e){}
+        try { 
+          window.appState.userData = JSON.parse(cachedData);
+          if (window.appState.userData.lastLoginDate !== todayStr) {
+            window.appState.userData.loginDays = (window.appState.userData.loginDays || 1) + 1;
+            window.appState.userData.lastLoginDate = todayStr;
+          }
+        } catch(e){}
+      } else {
+        window.appState.userData.lastLoginDate = todayStr;
       }
 
-      // 2. Load Questions & Render UI IMMEDIATELY
+      // 2. Load Questions Data & Render UI
       await loadQuestionsData();
       window.populateUnitDropdowns();
       window.renderQuiz('fiveup');
       window.renderQuiz('sixup');
       window.renderBadges();
-      initCharts();
+      saveUserData();
 
-      // 3. Initialize Firebase Safely
+      // 3. Initialize Firebase
       try {
         const firebaseConfig = {
           apiKey: "AIzaSyD5zzHcKuBWwLA1dZjUi3zRVORSIMyQ6Og",
           authDomain: "elemqeuest.firebaseapp.com",
           projectId: "elemqeuest",
+          databaseURL: "https://elemqeuest-default-rtdb.firebaseio.com",
           storageBucket: "elemqeuest.firebasestorage.app",
           messagingSenderId: "812471065830",
           appId: "1:812471065830:web:f9e8383c1dbafe5cf9ef27",
-          databaseURL: "https://elemqeuest-default-rtdb.firebaseio.com"
+          measurementId: "G-ZGWQ4VPEZN"
         };
         const app = initializeApp(firebaseConfig);
         auth = getAuth(app);
@@ -954,16 +778,16 @@
           const text = document.getElementById('status-text');
           if (snap.val() === true) {
             dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400";
-            text.innerText = "Firebase 雲端連線正常";
+            text.innerText = "Firebase 連線正常";
           } else {
             dot.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse";
             text.innerText = "本地防護模式";
           }
         });
       } catch (err) {
-        console.warn("Firebase Init fallback:", err);
+        console.warn("Firebase Init notice:", err);
         const text = document.getElementById('status-text');
-        if (text) text.innerText = "本地存取模式";
+        if (text) text.innerText = "本地離線模式";
       }
     });
   </script>
