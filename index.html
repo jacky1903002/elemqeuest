@@ -1,576 +1,736 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>康軒國小數學 題庫與學習歷程平台</title>
+  <title>康軒國小數學 知識測驗系統</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- SheetJS (XLSX) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <!-- html2canvas -->
+  <!-- SheetJS (Excel 匯入/匯出) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- html2canvas & jsPDF (高畫質 PNG/PDF 導出) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <!-- jsPDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
-
   <style>
-    body {
-      font-family: 'Noto Sans TC', sans-serif;
-      background-color: #f8fafc;
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(229, 231, 235, 1);
     }
     .badge-locked {
-      filter: grayscale(100%);
+      filter: grayscale(1);
       opacity: 0.4;
     }
     .badge-unlocked {
-      animation: pop 0.4s ease-out;
+      animation: pulse-ring 2s infinite;
     }
-    @keyframes pop {
-      0% { transform: scale(0.85); }
-      50% { transform: scale(1.08); }
-      100% { transform: scale(1); }
-    }
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #94a3b8;
+    @keyframes pulse-ring {
+      0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
     }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col font-sans">
 
-  <!-- ==================== HEADER / NAVIGATION ==================== -->
-  <header class="bg-indigo-700 text-white shadow-lg sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-16">
-        <!-- Logo & Title -->
-        <div class="flex items-center space-x-3">
-          <div class="bg-white text-indigo-700 p-2 rounded-lg font-black text-xl shadow">
-            <i class="fa-solid fa-calculator"></i>
-          </div>
-          <div>
-            <h1 class="font-bold text-lg leading-tight">康軒國小數學 題庫平台</h1>
-            <p class="text-xs text-indigo-200">單元題庫與連續登入追蹤系統</p>
-          </div>
+  <!-- 頂部導覽與系統狀態資訊欄 -->
+  <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="bg-blue-600 p-2 rounded-lg text-white">
+          <i class="fa-solid fa-graduation-cap text-xl"></i>
         </div>
-
-        <!-- Connection & Save Status Bar -->
-        <div class="hidden md:flex items-center space-x-4 text-xs bg-indigo-800/60 px-3 py-1.5 rounded-full border border-indigo-500/30">
-          <div class="flex items-center space-x-1.5" id="connection-status">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400" id="status-dot"></span>
-            <span id="status-text">系統載入中...</span>
-          </div>
-          <span class="text-indigo-400">|</span>
-          <div class="flex items-center space-x-1 text-indigo-200">
-            <i class="fa-regular fa-clock"></i>
-            <span>上次儲存: <span id="last-saved-time">尚未紀錄</span></span>
-          </div>
+        <div>
+          <h1 class="font-bold text-lg leading-tight">康軒國小數學 知識題庫系統</h1>
+          <p class="text-xs text-slate-400">連線 & 實時雲端備份</p>
         </div>
+      </div>
 
-        <!-- User Controls / Auth Buttons -->
-        <div class="flex items-center space-x-3" id="auth-header-section">
-          <div id="user-profile-display" class="hidden flex items-center space-x-3">
-            <span class="text-sm font-medium bg-indigo-600 px-3 py-1 rounded-full border border-indigo-400" id="header-username">使用者</span>
-            <button onclick="window.handleLogout()" class="text-xs bg-rose-500 hover:bg-rose-600 text-white px-3 py-1.5 rounded-lg transition shadow">
-              <i class="fa-solid fa-right-from-bracket mr-1"></i>登出
-            </button>
-          </div>
-          <button id="btn-show-login" onclick="window.openAuthModal()" class="text-xs bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-3 py-1.5 rounded-lg transition shadow">
-            <i class="fa-solid fa-user mr-1"></i>登入 / 註冊
+      <!-- 連線與備份時間監控 -->
+      <div class="flex items-center space-x-4 text-xs">
+        <div class="flex items-center space-x-1.5 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700">
+          <span id="conn-indicator" class="w-2.5 h-2.5 rounded-full bg-yellow-500 animate-pulse"></span>
+          <span id="conn-text" class="text-slate-300">連線中...</span>
+        </div>
+        <div class="hidden sm:flex items-center space-x-1.5 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700">
+          <i class="fa-regular fa-clock text-blue-400"></i>
+          <span class="text-slate-400">上次儲存:</span>
+          <span id="last-saved-time" class="text-slate-200 font-mono">未儲存</span>
+        </div>
+        
+        <!-- 使用者登入狀態 -->
+        <div id="user-info-area" class="flex items-center space-x-2">
+          <button onclick="window.openAuthModal()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition">
+            <i class="fa-solid fa-right-to-bracket mr-1"></i> 登入 / 註冊
           </button>
         </div>
       </div>
     </div>
-  </header>
 
-  <!-- Navigation Tabs & Global Actions -->
-  <nav class="bg-white border-b border-slate-200 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center py-2 space-y-2 md:space-y-0">
-      <!-- Tabs -->
-      <div class="flex space-x-1 sm:space-x-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0" id="navigation-tabs">
-        <button onclick="window.switchTab('fiveup')" id="tab-fiveup" class="tab-btn text-indigo-600 border-indigo-600 font-bold px-4 py-2 border-b-2 text-sm flex items-center space-x-2 whitespace-nowrap">
-          <i class="fa-solid fa-book-open"></i><span>小五上學期題庫</span>
+    <!-- 頁面切換 Tab -->
+    <div class="bg-slate-800 px-4 border-t border-slate-700">
+      <div class="max-w-7xl mx-auto flex space-x-2 overflow-x-auto py-2">
+        <button id="tab-btn-fiveup" onclick="window.switchPage('fiveup')" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition bg-blue-600 text-white">
+          <i class="fa-solid fa-book-open mr-1.5"></i>小五上學期
         </button>
-        <button onclick="window.switchTab('sixup')" id="tab-sixup" class="tab-btn text-slate-500 hover:text-indigo-600 border-transparent font-medium px-4 py-2 border-b-2 text-sm flex items-center space-x-2 whitespace-nowrap">
-          <i class="fa-solid fa-graduation-cap"></i><span>小六上學期題庫</span>
+        <button id="tab-btn-sixup" onclick="window.switchPage('sixup')" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition bg-slate-700 text-slate-300 hover:bg-slate-600">
+          <i class="fa-solid fa-book-bookmark mr-1.5"></i>小六上學期
         </button>
-        <button onclick="window.switchTab('badges')" id="tab-badges" class="tab-btn text-slate-500 hover:text-indigo-600 border-transparent font-medium px-4 py-2 border-b-2 text-sm flex items-center space-x-2 whitespace-nowrap">
-          <i class="fa-solid fa-award"></i><span>登入成就徽章牆</span>
-        </button>
-      </div>
-
-      <!-- Export / Import & Screen Capture Actions -->
-      <div class="flex items-center space-x-2 w-full md:w-auto justify-end">
-        <!-- Excel Import/Export -->
-        <label class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs px-2.5 py-1.5 rounded-md border border-slate-300 font-medium transition flex items-center space-x-1" title="匯入 Excel">
-          <i class="fa-solid fa-file-import text-emerald-600"></i><span>匯入 Excel</span>
-          <input type="file" id="excel-file-input" accept=".xlsx, .xls" class="hidden" onchange="window.importExcelData(event)">
-        </label>
-        <button onclick="window.exportExcelData()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs px-2.5 py-1.5 rounded-md border border-slate-300 font-medium transition flex items-center space-x-1" title="匯出 Excel">
-          <i class="fa-solid fa-file-excel text-emerald-600"></i><span>匯出 Excel</span>
-        </button>
-
-        <!-- Dynamic Page High-Res Capture -->
-        <div class="border-l border-slate-300 h-4 mx-1"></div>
-        <button onclick="window.exportPageAsImage()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs px-2.5 py-1.5 rounded-md border border-indigo-200 font-medium transition flex items-center space-x-1" title="匯出高畫質 PNG">
-          <i class="fa-solid fa-file-image"></i><span>高畫質 PNG</span>
-        </button>
-        <button onclick="window.exportPageAsPDF()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs px-2.5 py-1.5 rounded-md border border-rose-200 font-medium transition flex items-center space-x-1" title="匯出高畫質 PDF">
-          <i class="fa-solid fa-file-pdf"></i><span>PDF 下載</span>
+        <button id="tab-btn-badges" onclick="window.switchPage('badges')" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition bg-slate-700 text-slate-300 hover:bg-slate-600">
+          <i class="fa-solid fa-award mr-1.5"></i>連續登入成就牆
         </button>
       </div>
     </div>
-  </nav>
+  </header>
 
-  <!-- ==================== MAIN CONTENT AREA ==================== -->
-  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8" id="capture-area">
+  <!-- 主要內容區域 -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6">
     
-    <!-- PAGE 1: FIVEUP (小五上學期題庫) -->
-    <section id="page-fiveup" class="tab-content block space-y-6">
-      <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-            <span class="bg-indigo-100 text-indigo-700 text-xs px-2.5 py-1 rounded-full font-black">Grade 5</span>
-            康軒國小數學 - 小五上學期題庫
-          </h2>
-          <p class="text-sm text-slate-500 mt-1">選取單元檢視題目，可自由展開解答與計算步驟。</p>
-        </div>
-        <!-- Unit Select -->
-        <div class="flex items-center space-x-2 w-full sm:w-auto">
-          <label for="fiveup-unit-select" class="text-sm font-semibold text-slate-700 whitespace-nowrap">選擇單元：</label>
-          <select id="fiveup-unit-select" onchange="window.handleUnitChange('fiveup')" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:w-64 p-2.5 font-medium shadow-sm">
-            <option value="ALL">全部單元 (All Units)</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Quiz Questions Container -->
-      <div id="fiveup-quiz-container" class="space-y-4"></div>
-    </section>
-
-    <!-- PAGE 2: SIXUP (小六上學期題庫) -->
-    <section id="page-sixup" class="tab-content hidden space-y-6">
-      <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-            <span class="bg-purple-100 text-purple-700 text-xs px-2.5 py-1 rounded-full font-black">Grade 6</span>
-            康軒國小數學 - 小六上學期題庫
-          </h2>
-          <p class="text-sm text-slate-500 mt-1">小六高階數學題目複習與計算方式說明。</p>
-        </div>
-        <!-- Unit Select -->
-        <div class="flex items-center space-x-2 w-full sm:w-auto">
-          <label for="sixup-unit-select" class="text-sm font-semibold text-slate-700 whitespace-nowrap">選擇單元：</label>
-          <select id="sixup-unit-select" onchange="window.handleUnitChange('sixup')" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full sm:w-64 p-2.5 font-medium shadow-sm">
-            <option value="ALL">全部單元 (All Units)</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Quiz Questions Container -->
-      <div id="sixup-quiz-container" class="space-y-4"></div>
-    </section>
-
-    <!-- PAGE 3: LOGIN DAYS BADGES WALL (1 ~ 1000 Days) -->
-    <section id="page-badges" class="tab-content hidden space-y-6">
-      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center flex-wrap gap-4">
-        <div>
-          <h2 class="text-xl font-bold text-slate-800">登入成就與榮譽徽章牆</h2>
-          <p class="text-sm text-slate-500 mt-1">持續登入系統累積天數，解鎖屬於您的專屬勳章！</p>
-        </div>
-        <div class="bg-amber-50 border border-amber-200 px-4 py-2 rounded-xl flex items-center space-x-3">
-          <i class="fa-solid fa-fire text-amber-500 text-2xl"></i>
+    <!-- 分頁一：小五上學期 -->
+    <section id="page-fiveup" class="page-content space-y-6">
+      <div class="glass-card rounded-2xl p-5 shadow-sm">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 pb-4 mb-4">
           <div>
-            <p class="text-[11px] text-amber-700 font-bold uppercase">目前累積登入</p>
-            <p class="text-lg font-black text-amber-900"><span id="badge-current-days">1</span> 天</p>
+            <h2 class="text-xl font-bold text-slate-900 flex items-center">
+              <span class="w-3 h-6 bg-blue-600 rounded-full mr-2"></span>
+              康軒國小數學 _ 小五上學期題庫
+            </h2>
+            <p class="text-sm text-slate-500 mt-1">選取單元進行題目研讀與檢視</p>
+          </div>
+
+          <!-- 工具列：單元下拉選單與導出匯入 -->
+          <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+            <select id="unit-select-fiveup" onchange="window.filterQuestions('fiveup')" class="bg-white border border-slate-300 text-slate-700 rounded-lg text-sm px-3 py-2 font-medium focus:ring-2 focus:ring-blue-500 outline-none shadow-sm flex-1 md:flex-none">
+              <option value="ALL">所有單元 (載入中...)</option>
+            </select>
+            
+            <button onclick="window.exportExcel('fiveup')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2 rounded-lg text-xs font-medium transition shadow-sm">
+              <i class="fa-solid fa-file-excel mr-1"></i>匯出 EXCEL
+            </button>
+            <label class="bg-teal-600 hover:bg-teal-500 text-white px-3 py-2 rounded-lg text-xs font-medium transition cursor-pointer shadow-sm">
+              <i class="fa-solid fa-file-import mr-1"></i>匯入 EXCEL
+              <input type="file" accept=".xlsx, .xls" onchange="window.importExcel(event, 'fiveup')" class="hidden">
+            </label>
+            <button onclick="window.exportPNG('page-fiveup-content')" class="bg-purple-600 hover:bg-purple-500 text-white px-3 py-2 rounded-lg text-xs font-medium transition shadow-sm">
+              <i class="fa-solid fa-image mr-1"></i>高畫質 PNG
+            </button>
+            <button onclick="window.exportPDF('page-fiveup-content', '小五上學期題庫')" class="bg-rose-600 hover:bg-rose-500 text-white px-3 py-2 rounded-lg text-xs font-medium transition shadow-sm">
+              <i class="fa-solid fa-file-pdf mr-1"></i>高畫質 PDF
+            </button>
+          </div>
+        </div>
+
+        <!-- 題目內容渲染區 -->
+        <div id="page-fiveup-content" class="space-y-4 bg-white p-4 rounded-xl border border-slate-100 min-h-[300px]">
+          <div class="text-center py-12 text-slate-400">
+            <i class="fa-solid fa-spinner fa-spin text-3xl mb-2"></i>
+            <p>正在載入題庫內容...</p>
           </div>
         </div>
       </div>
+    </section>
 
-      <!-- Section: Login Streak Badges (1~1000 days) -->
-      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-        <h3 class="text-base font-bold text-slate-800 flex items-center border-b pb-3">
-          <i class="fa-solid fa-calendar-days text-amber-500 mr-2 text-xl"></i>
-          累積登入天數徽章 (1 ~ 1000 天)
-        </h3>
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4" id="login-badges-grid"></div>
+    <!-- 分頁二：小六上學期 -->
+    <section id="page-sixup" class="page-content space-y-6 hidden">
+      <div class="glass-card rounded-2xl p-5 shadow-sm">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 pb-4 mb-4">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900 flex items-center">
+              <span class="w-3 h-6 bg-indigo-600 rounded-full mr-2"></span>
+              康軒國小數學 _ 小六上學期題庫
+            </h2>
+            <p class="text-sm text-slate-500 mt-1">選取單元進行題目研讀與檢視</p>
+          </div>
+
+          <!-- 工具列 -->
+          <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+            <select id="unit-select-sixup" onchange="window.filterQuestions('sixup')" class="bg-white border border-slate-300 text-slate-700 rounded-lg text-sm px-3 py-2 font-medium focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm flex-1 md:flex-none">
+              <option value="ALL">所有單元 (載入中...)</option>
+            </select>
+            
+            <button onclick="window.exportExcel('sixup')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2 rounded-lg text-xs font-medium transition shadow-sm">
+              <i class="fa-solid fa-file-excel mr-1"></i>匯出 EXCEL
+            </button>
+            <label class="bg-teal-600 hover:bg-teal-500 text-white px-3 py-2 rounded-lg text-xs font-medium transition cursor-pointer shadow-sm">
+              <i class="fa-solid fa-file-import mr-1"></i>匯入 EXCEL
+              <input type="file" accept=".xlsx, .xls" onchange="window.importExcel(event, 'sixup')" class="hidden">
+            </label>
+            <button onclick="window.exportPNG('page-sixup-content')" class="bg-purple-600 hover:bg-purple-500 text-white px-3 py-2 rounded-lg text-xs font-medium transition shadow-sm">
+              <i class="fa-solid fa-image mr-1"></i>高畫質 PNG
+            </button>
+            <button onclick="window.exportPDF('page-sixup-content', '小六上學期題庫')" class="bg-rose-600 hover:bg-rose-500 text-white px-3 py-2 rounded-lg text-xs font-medium transition shadow-sm">
+              <i class="fa-solid fa-file-pdf mr-1"></i>高畫質 PDF
+            </button>
+          </div>
+        </div>
+
+        <!-- 題目內容渲染區 -->
+        <div id="page-sixup-content" class="space-y-4 bg-white p-4 rounded-xl border border-slate-100 min-h-[300px]">
+          <div class="text-center py-12 text-slate-400">
+            <i class="fa-solid fa-spinner fa-spin text-3xl mb-2"></i>
+            <p>正在載入題庫內容...</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 分頁三：連續登入成就牆 (1~1000天) -->
+    <section id="page-badges" class="page-content space-y-6 hidden">
+      <div class="glass-card rounded-2xl p-5 shadow-sm">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 pb-4 mb-4">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900 flex items-center">
+              <span class="w-3 h-6 bg-amber-500 rounded-full mr-2"></span>
+              連續登入成就勳章 (1 ~ 1000 天)
+            </h2>
+            <p class="text-sm text-slate-500 mt-1">目前已連續登入：<span id="current-streak-days" class="text-amber-600 font-bold text-base">1</span> 天</p>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <button onclick="window.exportPNG('badges-container')" class="bg-purple-600 hover:bg-purple-500 text-white px-3 py-2 rounded-lg text-xs font-medium transition shadow-sm">
+              <i class="fa-solid fa-image mr-1"></i>匯出勳章牆 PNG
+            </button>
+          </div>
+        </div>
+
+        <!-- 勳章展示網格 -->
+        <div id="badges-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <!-- 勳章由 JavaScript 動態生成 -->
+        </div>
       </div>
     </section>
 
   </main>
 
-  <!-- ==================== AUTH MODAL ==================== -->
-  <div id="auth-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative overflow-hidden">
-      <!-- Close Button -->
-      <button onclick="window.closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-
-      <!-- Auth Switcher Header -->
-      <div class="flex border-b border-slate-200 mb-6">
-        <button id="tab-login" onclick="window.switchAuthTab('login')" class="flex-1 py-3 font-bold text-center border-b-2 border-indigo-600 text-indigo-600">帳號登入</button>
-        <button id="tab-register" onclick="window.switchAuthTab('register')" class="flex-1 py-3 font-bold text-center border-b-2 border-transparent text-slate-400 hover:text-slate-600">註冊新帳號</button>
+  <!-- 登入 / 註冊對話框 Modal -->
+  <div id="auth-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full mx-4 overflow-hidden border border-slate-200">
+      <div class="bg-slate-900 px-6 py-4 flex justify-between items-center text-white">
+        <h3 class="font-bold text-base flex items-center">
+          <i class="fa-solid fa-user-shield mr-2 text-blue-400"></i>
+          <span id="auth-modal-title">會員登入</span>
+        </h3>
+        <button onclick="window.closeAuthModal()" class="text-slate-400 hover:text-white transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
       </div>
 
-      <!-- Login Form -->
-      <form id="form-login" onsubmit="window.handleLogin(event)" class="space-y-4">
-        <div>
-          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">電子郵件 (Email)</label>
-          <input type="email" id="login-email" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="student@example.com">
+      <div class="p-6">
+        <!-- 登入 / 註冊 切換 Tab -->
+        <div class="flex border-b border-slate-200 mb-5">
+          <button id="tab-login-btn" onclick="window.switchAuthTab('login')" class="flex-1 py-2 text-center text-sm font-bold border-b-2 border-blue-600 text-blue-600">
+            帳號登入
+          </button>
+          <button id="tab-register-btn" onclick="window.switchAuthTab('register')" class="flex-1 py-2 text-center text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-600">
+            註冊新帳號
+          </button>
         </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">密碼</label>
-          <input type="password" id="login-password" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="••••••••">
-        </div>
-        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-lg shadow-md transition text-sm">
-          登入系統
-        </button>
-      </form>
 
-      <!-- Register Form -->
-      <form id="form-register" onsubmit="window.handleRegister(event)" class="space-y-4 hidden">
-        <div>
-          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">學生暱稱 (Nickname)</label>
-          <input type="text" id="reg-nickname" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="例如：王小明">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">電子郵件 (Email)</label>
-          <input type="email" id="reg-email" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="student@example.com">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">設定密碼 (至少6位)</label>
-          <input type="password" id="reg-password" minlength="6" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="••••••••">
-        </div>
-        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg shadow-md transition text-sm">
-          立即註冊 (免審核)
-        </button>
-      </form>
+        <!-- 登入表單 -->
+        <form id="login-form" onsubmit="window.handleLogin(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">電子郵件 (Email)</label>
+            <input type="email" id="login-email" required placeholder="example@mail.com" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">密碼</label>
+            <input type="password" id="login-password" required placeholder="••••••••" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+          </div>
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2 rounded-lg text-sm transition shadow-md">
+            登入
+          </button>
+        </form>
+
+        <!-- 註冊表單 -->
+        <form id="register-form" onsubmit="window.handleRegister(event)" class="space-y-4 hidden">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">暱稱 (無須審核)</label>
+            <input type="text" id="reg-nickname" required placeholder="請輸入暱稱" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">電子郵件 (Email)</label>
+            <input type="email" id="reg-email" required placeholder="example@mail.com" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">密碼 (至少 6 個字元)</label>
+            <input type="password" id="reg-password" required minlength="6" placeholder="••••••••" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+          </div>
+          <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2 rounded-lg text-sm transition shadow-md">
+            立即註冊
+          </button>
+        </form>
+      </div>
     </div>
   </div>
 
-  <!-- Notification Toast Container -->
-  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2"></div>
-
-  <!-- ==================== JAVASCRIPT LOGIC ==================== -->
+  <!-- Firebase 9+ SDK 初始化與全域控制腳本 -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { 
-      getAuth, 
-      createUserWithEmailAndPassword, 
-      signInWithEmailAndPassword, 
-      onAuthStateChanged, 
-      signOut, 
-      updateProfile 
-    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-    import { 
-      getDatabase, 
-      ref, 
-      set, 
-      get, 
-      onValue 
-    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    // Global State Container
-    window.appState = {
-      currentUser: null,
-      userData: {
-        nickname: '訪客',
-        loginDays: 1,
-        lastLoginDate: null,
-        lastSaved: null
-      },
-      fiveupQuestions: [],
-      sixupQuestions: [],
-      currentTab: 'fiveup'
+    // 使用者提供的 Firebase 設定
+    const firebaseConfig = {
+      apiKey: "AIzaSyD5zzHcKuBWwLA1dZjUi3zRVORSIMyQ6Og",
+      authDomain: "elemqeuest.firebaseapp.com",
+      databaseURL: "https://elemqeuest-default-rtdb.firebaseio.com",
+      projectId: "elemqeuest",
+      storageBucket: "elemqeuest.firebasestorage.app",
+      messagingSenderId: "812471065830",
+      appId: "1:812471065830:web:f9e8383c1dbafe5cf9ef27",
+      measurementId: "G-ZGWQ4VPEZN"
     };
 
-    // Firebase References
-    let auth = null;
-    let db = null;
+    // 全域狀態
+    let app, auth, db;
+    let currentUser = null;
+    let questionsData = {
+      fiveup: [],
+      sixup: []
+    };
+    let userStreakDays = 1;
 
-    // Default Fallback Datasets
-    const defaultFiveUp = [
-      { id: "5U-01", unit: "第一單元 倍數與因數", question: "請問 24 的最大因數與最小倍數相加是多少？", answer: "48", explanation: "24 的最大因數是 24，最小倍數也是 24。計算方式：24 + 24 = 48。" },
-      { id: "5U-02", unit: "第一單元 倍數與因數", question: "寫出 18 的所有因數。", answer: "1, 2, 3, 6, 9, 18", explanation: "18 的因數為能整除 18 的正整數：1×18, 2×9, 3×6。" },
-      { id: "5U-03", unit: "第二單元 多邊形與內角和", question: "正六邊形的每一個內角是多少度？內角和是多少度？", answer: "內角 120°，內角和 720°", explanation: "內角和公式：(6 - 2) × 180° = 720°。每一個內角 = 720° ÷ 6 = 120°。" },
-      { id: "5U-04", unit: "第三單元 異分母分數加減", question: "計算 1/2 + 1/3 的結果。", answer: "5/6", explanation: "先找分母 2 和 3 的最小公倍數 6 通分：3/6 + 2/6 = 5/6。" }
+    // 預設題庫 (Fallback)
+    const defaultFiveup = [
+      { id: 1, unit: "第一單元：數的十進位與計算", question: "請問 3.14159 的百分位數字是多少？", answer: "4", explanation: "十分位是1，百分位是4，千分位是1。" },
+      { id: 2, unit: "第一單元：數的十進位與計算", question: "計算 1.25 × 8 = ？", answer: "10", explanation: "1.25乘以8直式計算結果恰好為10.00。" },
+      { id: 3, unit: "第二單元：因數與倍數", question: "24 與 36 的最大公因數是多少？", answer: "12", explanation: "24的因數有1,2,3,4,6,8,12,24；36的因數有1,2,3,4,6,9,12,18,36。最大公因數為12。" },
+      { id: 4, unit: "第三單元：多邊形與內角和", question: "正五邊形的所有內角和是多少度？", answer: "540度", explanation: "多邊形內角和公式：(n - 2) × 180° = (5 - 2) × 180° = 540°。" }
     ];
 
-    const defaultSixUp = [
-      { id: "6U-01", unit: "第一單元 質數與合數", question: "請列出 30 以內大於 10 的所有質數。", answer: "11, 13, 17, 19, 23, 29", explanation: "質數是指除了 1 和自己本身以外沒有其他因數的整數。" },
-      { id: "6U-02", unit: "第二單元 圓周長與圓面積", question: "半徑為 5 公分的圓，其圓周長與圓面積分別是多少？(圓周率以 3.14 計算)", answer: "圓周長 31.4 公分，圓面積 78.5 平方公分", explanation: "圓周長 = 直徑 × 3.14 = (5 × 2) × 3.14 = 31.4 公分；圓面積 = 半徑 × 半徑 × 3.14 = 5 × 5 × 3.14 = 78.5 平方公分。" },
-      { id: "6U-03", unit: "第三單元 速度與距離", question: "汽車 3 小時行駛了 210 公里，平均時速是多少公里？", answer: "時速 70 公里/小時", explanation: "速度 = 距離 ÷ 時間。計算方式：210 ÷ 3 = 70 (公里/小時)。" }
+    const defaultSixup = [
+      { id: 1, unit: "第一單元：質因數分解", question: "將 60 進行質因數分解的結果為何？", answer: "2^2 × 3 × 5 (或 2×2×3×5)", explanation: "60 = 2 × 30 = 2 × 2 × 15 = 2 × 2 × 3 × 5。" },
+      { id: 2, unit: "第二單元：分數的除法", question: "計算 (3/4) ÷ (1/2) = ？", answer: "1 1/2 (或 3/2)", explanation: "分數相除等於乘以倒數：(3/4) × (2/1) = 6/4 = 3/2 = 1 1/2。" },
+      { id: 3, unit: "第三單元：圓周長與圓面積", question: "半徑為 10 公分的圓，其面積約為多少平方公分？(圓周率以3.14計算)", answer: "314平方公分", explanation: "圓面積公式：半徑 × 半徑 × 3.14 = 10 × 10 × 3.14 = 314。" }
     ];
 
-    function standardizeQuestions(rawData, defaultPrefix) {
-      if (!rawData) return [];
-      let list = [];
-      try {
-        if (Array.isArray(rawData)) {
-          list = rawData;
-        } else if (typeof rawData === 'object') {
-          Object.keys(rawData).forEach(unitKey => {
-            const val = rawData[unitKey];
-            if (Array.isArray(val)) {
-              val.forEach(q => list.push({ ...q, unit: q.unit || unitKey }));
-            } else if (val && typeof val === 'object' && Array.isArray(val.questions)) {
-              val.questions.forEach(q => list.push({ ...q, unit: q.unit || unitKey }));
-            }
-          });
-        }
-      } catch (err) {
-        console.warn("JSON parse warning:", err);
-      }
+    // 初始化 Firebase
+    try {
+      app = initializeApp(firebaseConfig);
+      auth = getAuth(app);
+      db = getDatabase(app);
 
-      return list.map((item, idx) => {
-        const u = item.unit || item.category || item.title || "一般單元";
-        const qText = item.question || item.title || item.stem || item.content || `題目 #${idx + 1}`;
-        
-        let ansText = item.answer;
-        if (typeof item.answer === 'number' && item.options) {
-          ansText = item.options[item.answer] || item.answer;
+      // 連線狀態監聽
+      const connectedRef = ref(db, ".info/connected");
+      onValue(connectedRef, (snap) => {
+        const connInd = document.getElementById("conn-indicator");
+        const connText = document.getElementById("conn-text");
+        if (snap.val() === true) {
+          connInd.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
+          connText.innerText = "雲端已連線";
+          connText.className = "text-emerald-400";
+        } else {
+          connInd.className = "w-2.5 h-2.5 rounded-full bg-yellow-500 animate-pulse";
+          connText.innerText = "離線 / 本地模式";
+          connText.className = "text-yellow-400";
         }
-        if (ansText === undefined || ansText === null) {
-          ansText = "請參考解答詳細說明。";
-        }
-
-        return {
-          id: item.id || `${defaultPrefix}-${idx + 1}`,
-          unit: String(u).trim(),
-          question: qText,
-          answer: String(ansText),
-          explanation: item.explanation || item.analysis || item.calculation || item.detail || "依據題意按步驟計算即可獲得答案。"
-        };
       });
+
+      // 監聽 User 驗證狀態
+      onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+        renderUserInfo();
+        if (user) {
+          syncUserDataFromDB(user.uid);
+        }
+      });
+
+    } catch (e) {
+      console.warn("Firebase 初始化警告，系統啟用離線防護模式:", e);
+      document.getElementById("conn-text").innerText = "本地防護模式";
     }
 
-    async function loadQuestionsData() {
+    // 實時備份資訊更新
+    function updateLastSavedTime() {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('zh-TW', { hour12: false });
+      document.getElementById("last-saved-time").innerText = timeStr;
+    }
+
+    // 數據標準化
+    function standardizeData(rawList, defaultList) {
+      if (!Array.isArray(rawList) || rawList.length === 0) return defaultList;
+      return rawList.map((item, idx) => ({
+        id: item.id || (idx + 1),
+        unit: item.unit || item.單元 || "綜合單元",
+        question: item.question || item.題目 || "無題目內容",
+        answer: item.answer || item.答案 || "無答案記錄",
+        explanation: item.explanation || item.計算方式 || item.解析 || "無詳細計算步驟"
+      }));
+    }
+
+    // 載入 JSON 題庫檔
+    async function loadQuestionBanks() {
+      // 五上
       try {
         const res5 = await fetch('./fiveup.json');
         if (res5.ok) {
-          const json5 = await res5.json();
-          const parsed = standardizeQuestions(json5, '5U');
-          window.appState.fiveupQuestions = parsed.length > 0 ? parsed : defaultFiveUp;
-        } else { throw new Error(); }
+          const data5 = await res5.json();
+          questionsData.fiveup = standardizeData(data5, defaultFiveup);
+        } else {
+          questionsData.fiveup = defaultFiveup;
+        }
       } catch (e) {
-        window.appState.fiveupQuestions = defaultFiveUp;
+        questionsData.fiveup = defaultFiveup;
       }
 
+      // 六上
       try {
         const res6 = await fetch('./sixup.json');
         if (res6.ok) {
-          const json6 = await res6.json();
-          const parsed = standardizeQuestions(json6, '6U');
-          window.appState.sixupQuestions = parsed.length > 0 ? parsed : defaultSixUp;
-        } else { throw new Error(); }
+          const data6 = await res6.json();
+          questionsData.sixup = standardizeData(data6, defaultSixup);
+        } else {
+          questionsData.sixup = defaultSixup;
+        }
       } catch (e) {
-        window.appState.sixupQuestions = defaultSixUp;
+        questionsData.sixup = defaultSixup;
       }
+
+      // 初始化 Dropdowns 與渲染
+      window.populateDropdown('fiveup');
+      window.populateDropdown('sixup');
+      window.renderQuestions('fiveup');
+      window.renderQuestions('sixup');
+      updateLastSavedTime();
     }
 
-    window.populateUnitDropdowns = function() {
-      const fiveupSelect = document.getElementById('fiveup-unit-select');
-      if (fiveupSelect) {
-        const fiveupUnits = [...new Set(window.appState.fiveupQuestions.map(q => q.unit))].filter(Boolean);
-        fiveupSelect.innerHTML = '<option value="ALL">全部單元 (All Units)</option>';
-        fiveupUnits.forEach(u => {
-          const opt = document.createElement('option');
-          opt.value = u;
-          opt.textContent = u;
-          fiveupSelect.appendChild(opt);
-        });
+    // 掛載全域操作介面
+    window.switchPage = function(pageKey) {
+      document.querySelectorAll('.page-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-blue-600', 'text-white');
+        btn.classList.add('bg-slate-700', 'text-slate-300');
+      });
+
+      const targetPage = document.getElementById(`page-${pageKey}`);
+      const targetBtn = document.getElementById(`tab-btn-${pageKey}`);
+
+      if (targetPage) targetPage.classList.remove('hidden');
+      if (targetBtn) {
+        targetBtn.classList.remove('bg-slate-700', 'text-slate-300');
+        targetBtn.classList.add('bg-blue-600', 'text-white');
       }
 
-      const sixupSelect = document.getElementById('sixup-unit-select');
-      if (sixupSelect) {
-        const sixupUnits = [...new Set(window.appState.sixupQuestions.map(q => q.unit))].filter(Boolean);
-        sixupSelect.innerHTML = '<option value="ALL">全部單元 (All Units)</option>';
-        sixupUnits.forEach(u => {
-          const opt = document.createElement('option');
-          opt.value = u;
-          opt.textContent = u;
-          sixupSelect.appendChild(opt);
-        });
+      if (pageKey === 'badges') {
+        window.renderBadges();
       }
     };
 
-    window.handleUnitChange = function(type) {
-      window.renderQuiz(type);
-    };
+    window.populateDropdown = function(type) {
+      const selectEl = document.getElementById(`unit-select-${type}`);
+      if (!selectEl) return;
 
-    window.renderQuiz = function(type) {
-      const container = document.getElementById(`${type}-quiz-container`);
-      const selectElement = document.getElementById(`${type}-unit-select`);
-      if (!container || !selectElement) return;
+      const list = questionsData[type] || [];
+      const units = Array.from(new Set(list.map(item => item.unit)));
 
-      const selectedUnit = selectElement.value;
-      const questions = type === 'fiveup' ? window.appState.fiveupQuestions : window.appState.sixupQuestions;
-      
-      const filtered = (selectedUnit === 'ALL' || !selectedUnit) 
-        ? questions 
-        : questions.filter(q => String(q.unit).trim() === String(selectedUnit).trim());
-
-      container.innerHTML = '';
-      if (!filtered || filtered.length === 0) {
-        container.innerHTML = `
-          <div class="p-8 text-center bg-white rounded-xl border border-slate-200 space-y-3">
-            <i class="fa-solid fa-folder-open text-4xl text-slate-300"></i>
-            <p class="text-slate-500 font-medium">此單元目前尚無題目資料</p>
-          </div>
-        `;
-        return;
-      }
-
-      filtered.forEach((q, idx) => {
-        const card = document.createElement('div');
-        card.className = "bg-white p-6 rounded-xl border border-slate-200 shadow-sm transition hover:shadow-md";
-
-        const detailId = `ans-detail-${type}-${idx}-${String(q.id).replace(/[^a-zA-Z0-9]/g, '-')}`;
-
-        card.innerHTML = `
-          <div class="flex items-center justify-between mb-3">
-            <span class="text-xs bg-indigo-50 text-indigo-700 border border-indigo-100 px-3 py-1 rounded-md font-semibold">${q.unit}</span>
-            <span class="text-xs font-bold text-slate-400">第 ${idx + 1} 題</span>
-          </div>
-          <h3 class="text-base sm:text-lg font-bold text-slate-800 mb-4 leading-relaxed">${q.question}</h3>
-
-          <div class="pt-2">
-            <button onclick="window.toggleAnswerDisplay('${detailId}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold px-4 py-2 rounded-lg border border-indigo-200 transition flex items-center space-x-2">
-              <i class="fa-solid fa-eye"></i>
-              <span>顯示 / 隱藏 答案與計算過程</span>
-            </button>
-          </div>
-
-          <div id="${detailId}" class="hidden mt-4 pt-4 border-t border-slate-100 space-y-3 animate-pop">
-            <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-900">
-              <span class="font-bold text-xs uppercase tracking-wider text-emerald-700 flex items-center gap-1 mb-1">
-                <i class="fa-solid fa-square-check text-emerald-600"></i> 正確答案 (Answer)：
-              </span>
-              <p class="text-sm font-black text-emerald-800 pl-5">${q.answer}</p>
-            </div>
-            
-            <div class="p-3 bg-indigo-50 border border-indigo-100 rounded-lg text-indigo-900">
-              <span class="font-bold text-xs uppercase tracking-wider text-indigo-700 flex items-center gap-1 mb-1">
-                <i class="fa-solid fa-calculator text-indigo-600"></i> 計算方式與詳細解析 (Explanation)：
-              </span>
-              <p class="text-xs sm:text-sm text-indigo-950 pl-5 leading-relaxed whitespace-pre-line">${q.explanation}</p>
-            </div>
-          </div>
-        `;
-        container.appendChild(card);
+      selectEl.innerHTML = `<option value="ALL">全部單元 (${list.length}題)</option>`;
+      units.forEach(unit => {
+        const count = list.filter(q => q.unit === unit).length;
+        const opt = document.createElement('option');
+        opt.value = unit;
+        opt.innerText = `${unit} (${count}題)`;
+        selectEl.appendChild(opt);
       });
     };
 
-    async function saveUserData() {
-      const timeString = new Date().toISOString();
-      window.appState.userData.lastSaved = timeString;
-      const timeDisplay = document.getElementById('last-saved-time');
-      if (timeDisplay) {
-        timeDisplay.innerText = new Date(timeString).toLocaleString('zh-TW');
+    window.filterQuestions = function(type) {
+      window.renderQuestions(type);
+    };
+
+    window.renderQuestions = function(type) {
+      const container = document.getElementById(`page-${type}-content`);
+      const selectEl = document.getElementById(`unit-select-${type}`);
+      if (!container) return;
+
+      const selectedUnit = selectEl ? selectEl.value : "ALL";
+      let list = questionsData[type] || [];
+
+      if (selectedUnit !== "ALL") {
+        list = list.filter(item => item.unit === selectedUnit);
       }
 
-      localStorage.setItem('math_quiz_user_data_v2', JSON.stringify(window.appState.userData));
+      if (list.length === 0) {
+        container.innerHTML = `<div class="text-center py-12 text-slate-400">目前沒有相關題目</div>`;
+        return;
+      }
 
-      if (db && window.appState.currentUser) {
-        try {
-          await set(ref(db, `users/${window.appState.currentUser.uid}`), window.appState.userData);
-        } catch (e) {
-          console.warn("Firebase sync error:", e);
+      let html = '';
+      list.forEach((item, index) => {
+        html += `
+          <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 hover:border-blue-300 transition shadow-sm space-y-3">
+            <div class="flex justify-between items-start gap-2 border-b border-slate-200 pb-2">
+              <span class="inline-block bg-blue-100 text-blue-700 font-semibold text-xs px-2.5 py-1 rounded-md">
+                ${item.unit}
+              </span>
+              <span class="text-xs text-slate-400 font-mono">#{item.id || index + 1}</span>
+            </div>
+            
+            <div class="font-medium text-slate-800 text-base leading-relaxed">
+              ${index + 1}. ${item.question}
+            </div>
+
+            <!-- 答案與計算過程按鈕與展開區 -->
+            <div class="pt-2">
+              <button onclick="window.toggleAnswer('${type}-${index}')" class="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center space-x-1 outline-none">
+                <i id="icon-${type}-${index}" class="fa-solid fa-chevron-down transition-transform"></i>
+                <span>顯示答案與計算過程</span>
+              </button>
+
+              <div id="ans-box-${type}-${index}" class="hidden mt-3 bg-white p-3.5 rounded-lg border border-blue-100 text-sm space-y-2">
+                <div class="flex items-baseline space-x-2">
+                  <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-0.5 rounded">答案</span>
+                  <span class="font-bold text-slate-800">${item.answer}</span>
+                </div>
+                <div class="flex items-baseline space-x-2 pt-1 border-t border-slate-100">
+                  <span class="bg-amber-100 text-amber-800 text-xs font-bold px-2 py-0.5 rounded">計算方式</span>
+                  <span class="text-slate-600">${item.explanation}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    };
+
+    window.toggleAnswer = function(id) {
+      const box = document.getElementById(`ans-box-${id}`);
+      const icon = document.getElementById(`icon-${id}`);
+      if (box) {
+        if (box.classList.contains('hidden')) {
+          box.classList.remove('hidden');
+          if (icon) icon.style.transform = 'rotate(180deg)';
+        } else {
+          box.classList.add('hidden');
+          if (icon) icon.style.transform = 'rotate(0deg)';
         }
       }
-      window.renderBadges();
-    }
+    };
 
-    // Main App Initialization
-    document.addEventListener('DOMContentLoaded', async () => {
-      const cachedData = localStorage.getItem('math_quiz_user_data_v2');
-      const todayStr = new Date().toDateString();
-      if (cachedData) {
-        try { 
-          window.appState.userData = JSON.parse(cachedData);
-          if (window.appState.userData.lastLoginDate !== todayStr) {
-            window.appState.userData.loginDays = (window.appState.userData.loginDays || 1) + 1;
-            window.appState.userData.lastLoginDate = todayStr;
-          }
-        } catch(e){}
+    // 勳章牆渲染 (1~1000天)
+    window.renderBadges = function() {
+      const container = document.getElementById("badges-container");
+      document.getElementById("current-streak-days").innerText = userStreakDays;
+
+      const milestones = [
+        1, 2, 3, 5, 7, 10, 15, 20, 30, 50, 75, 100, 
+        150, 200, 250, 300, 365, 500, 700, 1000
+      ];
+
+      let html = '';
+      milestones.forEach(day => {
+        const isUnlocked = userStreakDays >= day;
+        html += `
+          <div class="flex flex-col items-center justify-center p-4 bg-white rounded-xl border ${isUnlocked ? 'border-amber-300 badge-unlocked' : 'border-slate-200 badge-locked'} text-center shadow-sm">
+            <div class="w-12 h-12 rounded-full ${isUnlocked ? 'bg-amber-500 text-white' : 'bg-slate-200 text-slate-400'} flex items-center justify-center text-xl mb-2">
+              <i class="fa-solid ${day >= 365 ? 'fa-crown' : 'fa-medal'}"></i>
+            </div>
+            <span class="font-bold text-slate-800 text-sm">${day} 天</span>
+            <span class="text-[10px] ${isUnlocked ? 'text-amber-600 font-semibold' : 'text-slate-400'} mt-0.5">
+              ${isUnlocked ? '已解鎖成就' : '未解鎖'}
+            </span>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    };
+
+    // Auth 相關視窗操作
+    window.openAuthModal = function() {
+      document.getElementById('auth-modal').classList.remove('hidden');
+    };
+    window.closeAuthModal = function() {
+      document.getElementById('auth-modal').classList.add('hidden');
+    };
+    window.switchAuthTab = function(tab) {
+      const loginForm = document.getElementById('login-form');
+      const regForm = document.getElementById('register-form');
+      const loginBtn = document.getElementById('tab-login-btn');
+      const regBtn = document.getElementById('tab-register-btn');
+
+      if (tab === 'login') {
+        loginForm.classList.remove('hidden');
+        regForm.classList.add('hidden');
+        loginBtn.className = "flex-1 py-2 text-center text-sm font-bold border-b-2 border-blue-600 text-blue-600";
+        regBtn.className = "flex-1 py-2 text-center text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-600";
       } else {
-        window.appState.userData.lastLoginDate = todayStr;
+        loginForm.classList.add('hidden');
+        regForm.classList.remove('hidden');
+        regBtn.className = "flex-1 py-2 text-center text-sm font-bold border-b-2 border-emerald-600 text-emerald-600";
+        loginBtn.className = "flex-1 py-2 text-center text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-600";
       }
+    };
 
-      await loadQuestionsData();
-      window.populateUnitDropdowns();
-      window.renderQuiz('fiveup');
-      window.renderQuiz('sixup');
-      window.renderBadges();
-      saveUserData();
+    window.handleLogin = async function(e) {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const pass = document.getElementById('login-password').value;
 
       try {
-        const firebaseConfig = {
-          apiKey: "AIzaSyD5zzHcKuBWwLA1dZjUi3zRVORSIMyQ6Og",
-          authDomain: "elemqeuest.firebaseapp.com",
-          projectId: "elemqeuest",
-          databaseURL: "https://elemqeuest-default-rtdb.firebaseio.com",
-          storageBucket: "elemqeuest.firebasestorage.app",
-          messagingSenderId: "812471065830",
-          appId: "1:812471065830:web:f9e8383c1dbafe5cf9ef27",
-          measurementId: "G-ZGWQ4VPEZN"
-        };
-        const app = initializeApp(firebaseConfig);
-        auth = getAuth(app);
-        db = getDatabase(app);
-
-        onAuthStateChanged(auth, (user) => {
-          if (user) {
-            window.appState.currentUser = user;
-            updateUserHeaderUI(user.displayName || user.email.split('@')[0]);
-
-            // Sync user data from Firebase Realtime DB
-            const userRef = ref(db, `users/${user.uid}`);
-            onValue(userRef, (snapshot) => {
-              const val = snapshot.val();
-              if (val) {
-                window.appState.userData = { ...window.appState.userData, ...val };
-                if (val.lastSaved) {
-                  const timeDisplay = document.getElementById('last-saved-time');
-                  if (timeDisplay) timeDisplay.innerText = new Date(val.lastSaved).toLocaleString('zh-TW');
-                }
-                window.renderBadges();
-              }
-            });
-          }
-        });
-
-        const connectedRef = ref(db, ".info/connected");
-        onValue(connectedRef, (snap) => {
-          const dot = document.getElementById('status-dot');
-          const text = document.getElementById('status-text');
-          if (snap.val() === true) {
-            dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400";
-            text.innerText = "Firebase 實時連線";
-          } else {
-            dot.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse";
-            text.innerText = "本地防護模式";
-          }
-        });
+        if (!auth) throw new Error("Firebase 離線中");
+        await signInWithEmailAndPassword(auth, email, pass);
+        alert("登入成功！");
+        window.closeAuthModal();
       } catch (err) {
-        console.warn("Firebase Init notice:", err);
-        const text = document.getElementById('status-text');
-        if (text) text.innerText = "本地離線模式";
+        alert("登入失敗: " + err.message);
       }
+    };
+
+    window.handleRegister = async function(e) {
+      e.preventDefault();
+      const nickname = document.getElementById('reg-nickname').value;
+      const email = document.getElementById('reg-email').value;
+      const pass = document.getElementById('reg-password').value;
+
+      try {
+        if (!auth) throw new Error("Firebase 離線中");
+        const cred = await createUserWithEmailAndPassword(auth, email, pass);
+        await updateProfile(cred.user, { displayName: nickname });
+        
+        // 寫入數據庫
+        if (db) {
+          await set(ref(db, 'users/' + cred.user.uid), {
+            nickname: nickname,
+            email: email,
+            streakDays: 1,
+            lastLogin: new Date().toISOString()
+          });
+        }
+        alert("註冊成功！暱稱已生效");
+        window.closeAuthModal();
+      } catch (err) {
+        alert("註冊失敗: " + err.message);
+      }
+    };
+
+    window.handleLogout = async function() {
+      if (auth) await signOut(auth);
+      currentUser = null;
+      renderUserInfo();
+      alert("已成功登出");
+    };
+
+    function renderUserInfo() {
+      const area = document.getElementById("user-info-area");
+      if (currentUser) {
+        area.innerHTML = `
+          <div class="flex items-center space-x-2 bg-slate-800 px-3 py-1 rounded-lg border border-slate-700">
+            <i class="fa-solid fa-circle-user text-blue-400"></i>
+            <span class="text-xs font-medium text-slate-200">${currentUser.displayName || currentUser.email}</span>
+            <button onclick="window.handleLogout()" class="text-xs text-rose-400 hover:text-rose-300 ml-1">登出</button>
+          </div>
+        `;
+      } else {
+        area.innerHTML = `
+          <button onclick="window.openAuthModal()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition shadow-sm">
+            <i class="fa-solid fa-right-to-bracket mr-1"></i> 登入 / 註冊
+          </button>
+        `;
+      }
+    }
+
+    async function syncUserDataFromDB(uid) {
+      if (!db) return;
+      try {
+        const snapshot = await get(ref(db, 'users/' + uid));
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          userStreakDays = data.streakDays || 1;
+          updateLastSavedTime();
+        }
+      } catch (e) {
+        console.warn("無法即時連線雲端資料庫:", e);
+      }
+    }
+
+    // EXCEL 匯入 / 匯出
+    window.exportExcel = function(type) {
+      const list = questionsData[type] || [];
+      const sheetData = list.map(item => ({
+        "單元": item.unit,
+        "題目": item.question,
+        "答案": item.answer,
+        "計算方式": item.explanation
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(sheetData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "題庫");
+      XLSX.writeFile(wb, `康軒數學_${type === 'fiveup' ? '五上' : '六上'}_題庫.xlsx`);
+      updateLastSavedTime();
+    };
+
+    window.importExcel = function(event, type) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const jsonArr = XLSX.utils.sheet_to_json(firstSheet);
+
+          const newList = standardizeData(jsonArr, []);
+          if (newList.length > 0) {
+            questionsData[type] = newList;
+            window.populateDropdown(type);
+            window.renderQuestions(type);
+            alert(`成功匯入 ${newList.length} 筆題目！`);
+            updateLastSavedTime();
+          } else {
+            alert("匯入失敗：檔案中沒有發現合格題目資料。");
+          }
+        } catch (err) {
+          alert("解析 Excel 檔案失敗: " + err.message);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    };
+
+    // PNG 導出
+    window.exportPNG = function(elementId) {
+      const target = document.getElementById(elementId);
+      if (!target) return;
+
+      html2canvas(target, { scale: 2 }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `高畫質圖檔_${new Date().getTime()}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        updateLastSavedTime();
+      });
+    };
+
+    // PDF 導出
+    window.exportPDF = function(elementId, title) {
+      const target = document.getElementById(elementId);
+      if (!target) return;
+
+      html2canvas(target, { scale: 2 }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const imgWidth = 210;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+        pdf.save(`${title}_${new Date().getTime()}.pdf`);
+        updateLastSavedTime();
+      });
+    };
+
+    // 頁面初次載入
+    window.addEventListener('DOMContentLoaded', () => {
+      loadQuestionBanks();
+      window.renderBadges();
     });
   </script>
 </body>
