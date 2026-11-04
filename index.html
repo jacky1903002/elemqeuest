@@ -394,7 +394,7 @@
       currentTab: 'fiveup'
     };
 
-    // Default Fallback Datasets (In case fiveup.json & sixup.json fetch are slow or missing)
+    // Default Fallback Datasets
     const defaultFiveUp = [
       { id: "5U-U1-01", unit: "第一單元 倍數與因數", question: "請問 24 的最大因數與最小倍數相加是多少？", options: ["25", "48", "24", "1"], answer: 1, explanation: "24 的最大因數是 24，最小倍數也是 24，24 + 24 = 48。" },
       { id: "5U-U1-02", unit: "第一單元 倍數與因數", question: "下列哪一個數同時是 2 與 3 的倍數？", options: ["14", "15", "18", "21"], answer: 2, explanation: "18 的個位數是偶數(是2的倍數)，數字和 1+8=9(是3的倍數)。" },
@@ -410,13 +410,129 @@
       { id: "6U-U3-04", unit: "第三單元 速度與距離", question: "小明 2 小時走了 8 公里，他的時速是多少？", options: ["2 公里/小時", "4 公里/小時", "8 公里/小時", "16 公里/小時"], answer: 1, explanation: "速度 = 距離 ÷ 時間 = 8 ÷ 2 = 4 公里/小時。" }
     ];
 
+    /**
+     * 強健的 JSON 格式標準化與相容函式
+     * 支持包含 object map、array、嵌套 questions 等多種多元 JSON 結構
+     */
+    function standardizeQuestions(rawData, defaultPrefix) {
+      if (!rawData) return [];
+      let list = [];
+
+      try {
+        if (Array.isArray(rawData)) {
+          list = rawData;
+        } else if (typeof rawData === 'object') {
+          // 若 JSON 格式為 { "第一單元": [ ... ], "第二單元": [ ... ] }
+          Object.keys(rawData).forEach(unitKey => {
+            const val = rawData[unitKey];
+            if (Array.isArray(val)) {
+              val.forEach(q => {
+                list.push({ ...q, unit: q.unit || unitKey });
+              });
+            } else if (val && typeof val === 'object' && Array.isArray(val.questions)) {
+              val.questions.forEach(q => {
+                list.push({ ...q, unit: q.unit || unitKey });
+              });
+            }
+          });
+        }
+      } catch (err) {
+        console.warn("JSON Parser warning:", err);
+      }
+
+      // 標準化內部欄位
+      return list.map((item, idx) => {
+        const u = item.unit || item.category || item.title || "一般單元";
+        const qText = item.question || item.title || item.stem || item.content || `題目 #${idx + 1}`;
+        const opts = item.options || item.choices || ["選項A", "選項B", "選項C", "選項D"];
+        
+        let ansIndex = 0;
+        if (typeof item.answer === 'number') {
+          ansIndex = item.answer;
+        } else if (typeof item.answer === 'string') {
+          const matchIdx = opts.indexOf(item.answer);
+          ansIndex = matchIdx !== -1 ? matchIdx : (parseInt(item.answer) || 0);
+        }
+
+        return {
+          id: item.id || `${defaultPrefix}-${idx + 1}`,
+          unit: u,
+          question: qText,
+          options: opts,
+          answer: ansIndex,
+          explanation: item.explanation || item.analysis || item.detail || "答對了！繼續加油！"
+        };
+      });
+    }
+
+    // Load JSON Files or Fallback
+    async function loadQuestionsData() {
+      // 1. 小五上學期 JSON 載入
+      try {
+        const res5 = await fetch('./fiveup.json');
+        if (res5.ok) {
+          const json5 = await res5.json();
+          const parsed = standardizeQuestions(json5, '5U');
+          window.appState.fiveupQuestions = parsed.length > 0 ? parsed : defaultFiveUp;
+        } else {
+          throw new Error('fiveup.json fetch failed');
+        }
+      } catch (e) {
+        console.warn("使用小五上預設備用題庫");
+        window.appState.fiveupQuestions = defaultFiveUp;
+      }
+
+      // 2. 小六上學期 JSON 載入
+      try {
+        const res6 = await fetch('./sixup.json');
+        if (res6.ok) {
+          const json6 = await res6.json();
+          const parsed = standardizeQuestions(json6, '6U');
+          window.appState.sixupQuestions = parsed.length > 0 ? parsed : defaultSixUp;
+        } else {
+          throw new Error('sixup.json fetch failed');
+        }
+      } catch (e) {
+        console.warn("使用小六上預設備用題庫");
+        window.appState.sixupQuestions = defaultSixUp;
+      }
+    }
+
+    // Dynamic Unit Selection Dropdowns
+    function populateUnitDropdowns() {
+      // 填入五上的單元選單
+      const fiveupUnits = [...new Set(window.appState.fiveupQuestions.map(q => q.unit))];
+      const fiveupSelect = document.getElementById('fiveup-unit-select');
+      fiveupSelect.innerHTML = '<option value="ALL">全部單元 (All Units)</option>';
+      fiveupUnits.forEach(u => {
+        const opt = document.createElement('option');
+        opt.value = u;
+        opt.textContent = u;
+        fiveupSelect.appendChild(opt);
+      });
+
+      // 填入六上的單元選單
+      const sixupUnits = [...new Set(window.appState.sixupQuestions.map(q => q.unit))];
+      const sixupSelect = document.getElementById('sixup-unit-select');
+      sixupSelect.innerHTML = '<option value="ALL">全部單元 (All Units)</option>';
+      sixupUnits.forEach(u => {
+        const opt = document.createElement('option');
+        opt.value = u;
+        opt.textContent = u;
+        sixupSelect.appendChild(opt);
+      });
+    }
+
     // ==================== INITIALIZATION & DATA FETCHING ====================
     window.addEventListener('DOMContentLoaded', async () => {
       setupNetworkMonitoring();
       await loadQuestionsData();
       populateUnitDropdowns();
+
+      // 顯式觸發題目渲染
       renderQuiz('fiveup');
       renderQuiz('sixup');
+
       renderBadges();
       initCharts();
 
@@ -620,14 +736,25 @@
     // ==================== QUIZ RENDERING & INTERACTION ====================
     window.renderQuiz = (type) => {
       const container = document.getElementById(`${type}-quiz-container`);
-      const selectedUnit = document.getElementById(`${type}-unit-select`).value;
+      const selectElement = document.getElementById(`${type}-unit-select`);
+      if (!container || !selectElement) return;
+
+      const selectedUnit = selectElement.value;
       const questions = type === 'fiveup' ? window.appState.fiveupQuestions : window.appState.sixupQuestions;
 
       const filtered = selectedUnit === 'ALL' ? questions : questions.filter(q => q.unit === selectedUnit);
       container.innerHTML = '';
 
-      if (filtered.length === 0) {
-        container.innerHTML = `<div class="p-8 text-center text-slate-400 bg-white rounded-xl border">此單元目前尚無題目</div>`;
+      if (!filtered || filtered.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 text-center bg-white rounded-xl border border-slate-200 space-y-3">
+            <i class="fa-solid fa-folder-open text-4xl text-slate-300"></i>
+            <p class="text-slate-500 font-medium">此單元目前尚無題目資料</p>
+            <button onclick="retryLoadQuestions('${type}')" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-3 py-1.5 rounded-lg transition font-bold border border-indigo-200">
+              <i class="fa-solid fa-rotate-right mr-1"></i>重新載入題庫
+            </button>
+          </div>
+        `;
         return;
       }
 
@@ -662,7 +789,7 @@
 
         card.innerHTML = `
           <div class="flex items-center justify-between mb-3">
-            <span class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md font-semibold">${q.unit}</span>
+            <span class="text-xs bg-indigo-50 text-indigo-700 border border-indigo-100 px-2.5 py-1 rounded-md font-semibold">${q.unit}</span>
             <span class="text-xs font-bold text-slate-400">題目 #${idx + 1}</span>
           </div>
           <h3 class="text-base font-bold text-slate-800 mb-4">${q.question}</h3>
@@ -680,21 +807,10 @@
       });
     };
 
-    window.submitAnswer = async (qId, selectedIdx, correctIdx, type) => {
-      const isCorrect = selectedIdx === correctIdx;
-      window.appState.userData.answers[qId] = {
-        selected: selectedIdx,
-        isCorrect: isCorrect,
-        timestamp: new Date().toISOString()
-      };
-
-      if (isCorrect) {
-        showToast('回答正確！🎉', 'success');
-      } else {
-        showToast('回答錯誤，再接再厲！', 'error');
-      }
-
-      await saveUserDataToDB();
+    window.retryLoadQuestions = async (type) => {
+      showToast('正在重新載入題庫...', 'info');
+      await loadQuestionsData();
+      populateUnitDropdowns();
       renderQuiz(type);
     };
 
